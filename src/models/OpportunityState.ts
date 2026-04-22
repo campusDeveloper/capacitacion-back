@@ -12,7 +12,7 @@ import {
 import { User } from './User'
 
 @Table({
-    tableName: 'opportunity_states',
+    tableName: 'opportunitystate',
     timestamps: true
 })
 export class OpportunityState extends Model {
@@ -28,10 +28,6 @@ export class OpportunityState extends Model {
     @AllowNull(false)
     @Column(DataType.STRING(200))
     description!: string
-
-    @AllowNull(false)
-    @Column({ type: DataType.MEDIUMINT.UNSIGNED, defaultValue: 0 })
-    uses!: number
 
     @AllowNull(false)
     @Comment("0=Inactivo 1=Activo")

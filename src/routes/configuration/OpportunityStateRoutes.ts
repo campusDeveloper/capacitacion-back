@@ -6,11 +6,11 @@ import { OpportunityStateValidator } from "../../validators/configuration/Opport
 
 const router = Router()
 
-router.get("/state-oportunity", isAuth, OpportunityStateController.getAllOpportunityStates);
-router.get("/state-oportunity/:id", isAuth, validateSchema(OpportunityStateValidator.OpportunityStateIdSchema), OpportunityStateController.getOpportunityStateById);
-router.post("/state-oportunity", isAuth, validateSchema(OpportunityStateValidator.OpportunityStateSchema), OpportunityStateController.createOpportunityState);
-router.put('/state-oportunity/:id', isAuth, validateSchema(OpportunityStateValidator.OpportunityStateUpdateSchema), OpportunityStateController.updateOpportunityState);
-router.delete('/state-oportunity/:id', isAuth, validateSchema(OpportunityStateValidator.OpportunityStateIdSchema), OpportunityStateController.deleteOpportunityState);
-router.put('/state-oportunity/:id/switch-status', isAuth, validateSchema(OpportunityStateValidator.OpportunityStateIdSchema), OpportunityStateController.switchStatus);
+router.get("/configuration/state-oportunity", isAuth, OpportunityStateController.getAllOpportunityStates);
+router.get("/configuration/state-oportunity/:id", isAuth, validateSchema(OpportunityStateValidator.OpportunityStateIdSchema), OpportunityStateController.getOpportunityStateById);
+router.post("/configuration/state-oportunity", isAuth, validateSchema(OpportunityStateValidator.OpportunityStateSchema), OpportunityStateController.createOpportunityState);
+router.put('/configuration/state-oportunity/:id', isAuth, validateSchema(OpportunityStateValidator.OpportunityStateUpdateSchema), OpportunityStateController.updateOpportunityState);
+router.delete('/configuration/state-oportunity/:id', isAuth, validateSchema(OpportunityStateValidator.OpportunityStateIdSchema), OpportunityStateController.deleteOpportunityState);
+router.put('/configuration/state-oportunity/:id/switch-status', isAuth, validateSchema(OpportunityStateValidator.OpportunityStateIdSchema), OpportunityStateController.switchStatus);
 
 export default router
