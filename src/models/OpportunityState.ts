@@ -7,7 +7,7 @@ import {
     Model,
     PrimaryKey,
     Table,
-    Comment
+    Comment    
 } from 'sequelize-typescript'
 import { User } from './User'
 
@@ -28,6 +28,10 @@ export class OpportunityState extends Model {
     @AllowNull(false)
     @Column(DataType.STRING(200))
     description!: string
+
+    @AllowNull(false)
+    @Column(DataType.VIRTUAL)
+    declare uses: number;
 
     @AllowNull(false)
     @Comment("0=Inactivo 1=Activo")

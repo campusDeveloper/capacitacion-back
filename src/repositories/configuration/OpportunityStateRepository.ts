@@ -92,8 +92,20 @@ export class OpportunityStateRepository {
   }
 
   async getAllSorted(): Promise<OpportunityState[]> {
-    return await OpportunityState.findAll({
-      order: [['state', 'DESC']],
-    });
+  return await OpportunityState.findAll({
+    attributes: {
+      include: [
+        [
+          sequelize.literal(`(
+            SELECT COUNT(*)
+            FROM opportunities AS o
+            WHERE o.idOpportunityState = OpportunityState.id
+          )`),
+          'uses'
+        ]
+      ]
+    },
+    order: [['state', 'DESC']]
+  });
   }
 }
