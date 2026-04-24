@@ -18,16 +18,6 @@ export class OpportunityStateController {
       return ApiResponse.error(res, error);
     }
   }
-  //- Obtener por ID
-  static async getOpportunityStateById(req: Request, res: Response): Promise<string | any> {
-    try {
-      const id = Number(req.params.id);
-      const data = await service.getOpportunityStateById(id);
-      return ApiResponse.success(res, "Consultado correctamente", data);
-    } catch (error) {
-      return ApiResponse.error(res, error);
-    }
-  }
   //- Crear nuevo
   static async createOpportunityState(req: Request, res: Response): Promise<string | any> {
     try {

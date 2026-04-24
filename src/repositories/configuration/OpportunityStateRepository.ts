@@ -4,24 +4,39 @@ import { sequelize } from "../../config/database";
 import { IOpportunityStateBody, IOpportunityStateUpdateBody } from "../../interfaces/configuration/OpportunityState";
 
 export class OpportunityStateRepository {
-  async getAllOpportunityStates(): Promise<OpportunityState[]> {
-    return await OpportunityState.findAll();
-  }
 
-  async getOpportunityStateById(id: number): Promise<OpportunityState | null> {
-    return await OpportunityState.findByPk(id);
-  }
+  private readonly opportunityAttributes: any[] = [
+    'id',
+      'name',
+      'description', 
+      'state', 
+      'color', 
+      'createdBy', 
+      'updatedBy', 
+      'createdAt', 
+      'updatedAt',
+      [
+        sequelize.literal(`(
+          SELECT COUNT(*)
+          FROM opportunities AS o
+          WHERE o.idOpportunityState = OpportunityState.id
+        )`),
+        'uses'
+      ]
+    ];
 
-  async getOpportunityStateByName(name: string): Promise<OpportunityState | null> {
-    return await OpportunityState.findOne({
-      where: { name: name },
+async getAllOpportunityStates(): Promise<OpportunityState[]> {
+    return await OpportunityState.findAll({
+      attributes: this.opportunityAttributes,
+      order: [['state', 'DESC']]
     });
   }
 
   async createOpportunityState(data: IOpportunityStateBody, createdBy: number, transaction?: Transaction): Promise<OpportunityState> {
-    // Validar unicidad de name
+    // Validación de nombre: usamos un findOne minimalista (sin 'uses') para evitar errores
     const existing = await OpportunityState.findOne({
       where: { name: data.name },
+      attributes: ['id'], 
       transaction,
     });
 
@@ -29,24 +44,32 @@ export class OpportunityStateRepository {
       throw new Error(`Ya existe un estado de oportunidad con el nombre ${data.name}`);
     }
 
-    const OpportunityStateData: any = {
+    const opportunityStateData = {
       name: data.name,
       description: data.description,
       color: data.color,
       state: data.state ?? 1,
       createdBy: createdBy,
     };
-    return await OpportunityState.create(OpportunityStateData, { transaction });
+
+    const nuevo = await OpportunityState.create(opportunityStateData, { transaction });
+
+    // En lugar de llamar a getById, usamos findOne directamente con los atributos completos
+    return (await OpportunityState.findOne({
+      where: { id: nuevo.id },
+      attributes: this.opportunityAttributes,
+      transaction
+    }))!;
   }
 
   async updateOpportunityState(id: number, data: IOpportunityStateUpdateBody, updatedBy: number, transaction?: Transaction): Promise<OpportunityState | null> {
-    // Validar unicidad de name si se está cambiando
     if (data.name) {
       const existing = await OpportunityState.findOne({
         where: {
           name: data.name,
           id: { [Op.ne]: id },
         },
+        attributes: ['id'],
         transaction,
       });
 
@@ -55,57 +78,52 @@ export class OpportunityStateRepository {
       }
     }
 
-    const OpportunityStateData: any = {
-      name: data.name,
-      description: data.description,
-      color: data.color,
-      state: data.state,
-      updatedBy: updatedBy,
-    };
+    await OpportunityState.update(
+      { ...data, updatedBy },
+      { where: { id }, transaction }
+    );
 
-    await OpportunityState.update(OpportunityStateData, {
-      where: { id: id },
-      transaction,
+    // Retornamos el objeto actualizado usando findOne con el contador
+    return await OpportunityState.findOne({
+      where: { id },
+      attributes: this.opportunityAttributes,
+      transaction
     });
-
-    return await this.getOpportunityStateById(id);
   }
 
   async deleteOpportunityState(id: number, updatedBy: number, transaction?: Transaction): Promise<void> {
-    await OpportunityState.destroy({ where: { id: id }, transaction });
+    await OpportunityState.destroy({ where: { id }, transaction });
   }
 
   async switchStatus(id: number, updatedBy: number, transaction?: Transaction): Promise<OpportunityState> {
-    const OpportunityState = await this.getOpportunityStateById(id);
+    // Buscamos primero para obtener el estado actual
+    const record = await OpportunityState.findOne({
+      where: { id },
+      attributes: this.opportunityAttributes,
+      transaction
+    });
 
-    if (!OpportunityState) {
+    if (!record) {
       throw new Error('Estado de oportunidad no encontrado');
     }
 
-    return await OpportunityState.update(
+    await OpportunityState.update(
       {
-        state: OpportunityState.state ? 0 : 1,
+        state: record.state ? 0 : 1,
         updatedBy: updatedBy,
       },
-      { transaction }
+      { where: { id }, transaction }
     );
+
+    // Retornamos el registro final con los datos frescos
+    return (await OpportunityState.findOne({
+      where: { id },
+      attributes: this.opportunityAttributes,
+      transaction
+    }))!;
   }
 
   async getAllSorted(): Promise<OpportunityState[]> {
-  return await OpportunityState.findAll({
-    attributes: {
-      include: [
-        [
-          sequelize.literal(`(
-            SELECT COUNT(*)
-            FROM opportunities AS o
-            WHERE o.idOpportunityState = OpportunityState.id
-          )`),
-          'uses'
-        ]
-      ]
-    },
-    order: [['state', 'DESC']]
-  });
+    return await this.getAllOpportunityStates();
   }
 }

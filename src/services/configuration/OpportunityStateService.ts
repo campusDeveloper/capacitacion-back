@@ -1,7 +1,7 @@
 import { OpportunityStateRepository } from "../../repositories/configuration/OpportunityStateRepository";
 import { IOpportunityStateBody, IOpportunityStateUpdateBody } from "../../interfaces/configuration/OpportunityState";
 import { sequelize } from "../../config/database";
-import { OpportunityState } from "../../models/OpportunityState";
+import { OpportunityState, OpportunityState } from "../../models/OpportunityState";
 
 export class OpportunityStateService {
   private repo: OpportunityStateRepository;
@@ -12,16 +12,6 @@ export class OpportunityStateService {
 
   async getAllOpportunityStates(): Promise<OpportunityState[]> {
     return await this.repo.getAllSorted();
-  }
-
-  async getOpportunityStateById(id: number): Promise<OpportunityState> {
-    const OpportunityState = await this.repo.getOpportunityStateById(id);
-
-    if (!OpportunityState) {
-      throw new Error("Estado de oportunidad no encontrado");
-    }
-
-    return OpportunityState;
   }
 
   async createOpportunityState(body: IOpportunityStateBody, createdBy: number): Promise<OpportunityState> {
@@ -41,19 +31,27 @@ export class OpportunityStateService {
   }
 
   async deleteOpportunityState(id: number, updatedBy: number): Promise<void> {
-    // Validación de negocio: verificar si el estado está en uso
-    const OpportunityState = await this.repo.getOpportunityStateById(id);
-    if (!OpportunityState) {
-      throw new Error("Estado de oportunidad no encontrado");
-    }
-    if (OpportunityState.uses > 0) {
-      throw new Error("No se puede eliminar un estado de oportunidad que está en uso");
-    }
-
-    return sequelize.transaction(async (transaction) => {
-      await this.repo.deleteOpportunityState(id, updatedBy, transaction);
+    const opportunityState = await OpportunityState.findOne({
+        where: { id },
+        attributes: [
+            'id', 'name', 'description', 'state', 'color', 'createdBy', 'updatedBy', 'createdAt', 'updatedAt',
+            [
+                sequelize.literal(`(
+                    SELECT COUNT(*)
+                    FROM opportunities AS o
+                    WHERE o.idOpportunityState = OpportunityState.id
+                )`),
+                'uses'
+            ]
+        ]
     });
-  }
+    if (!opportunityState) {
+        throw new Error("Estado de oportunidad no encontrado");
+    }
+    return sequelize.transaction(async (transaction) => {
+        await this.repo.deleteOpportunityState(id, updatedBy, transaction);
+    });
+}
 
   async switchStatus(id: number, updatedBy: number): Promise<OpportunityState> {
     return sequelize.transaction(async (transaction) => {

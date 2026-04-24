@@ -6,11 +6,10 @@ import { OpportunityStateValidator } from "../../validators/configuration/Opport
 
 const router = Router()
 
-router.get("/configuration/state-oportunity", isAuth, OpportunityStateController.getAllOpportunityStates);
-router.get("/configuration/state-oportunity/:id", isAuth, validateSchema(OpportunityStateValidator.OpportunityStateIdSchema), OpportunityStateController.getOpportunityStateById);
-router.post("/configuration/state-oportunity", isAuth, validateSchema(OpportunityStateValidator.OpportunityStateSchema), OpportunityStateController.createOpportunityState);
-router.put('/configuration/state-oportunity/:id', isAuth, validateSchema(OpportunityStateValidator.OpportunityStateUpdateSchema), OpportunityStateController.updateOpportunityState);
-router.delete('/configuration/state-oportunity/:id', isAuth, validateSchema(OpportunityStateValidator.OpportunityStateIdSchema), OpportunityStateController.deleteOpportunityState);
-router.put('/configuration/state-oportunity/:id/switch-status', isAuth, validateSchema(OpportunityStateValidator.OpportunityStateIdSchema), OpportunityStateController.switchStatus);
+router.get("/configuration/state-oportunity", isAuth, OpportunityStateController.getAllOpportunityStates);//Con GET
+router.post("/configuration/state-oportunity", isAuth, validateSchema(OpportunityStateValidator.OpportunityStateSchema), OpportunityStateController.createOpportunityState);//con POST
+router.put('/configuration/state-oportunity/:id/update', isAuth, validateSchema(OpportunityStateValidator.OpportunityStateUpdateSchema), OpportunityStateController.updateOpportunityState);
+router.delete('/configuration/state-oportunity/:id/delete', isAuth, validateSchema(OpportunityStateValidator.OpportunityStateIdSchema), OpportunityStateController.deleteOpportunityState);
+router.put('/configuration/state-oportunity/:id/state', isAuth, validateSchema(OpportunityStateValidator.OpportunityStateIdSchema), OpportunityStateController.switchStatus);
 
 export default router

@@ -29,9 +29,6 @@ export class OpportunityState extends Model {
     @Column(DataType.STRING(200))
     description!: string
 
-    @AllowNull(false)
-    @Column(DataType.VIRTUAL)
-    declare uses: number;
 
     @AllowNull(false)
     @Comment("0=Inactivo 1=Activo")
