@@ -1,81 +1,81 @@
-import { Sequelize } from "sequelize-typescript";
-import { CustomerType } from "../../models/CustomerType"
-import { Customer } from "../../models/Customer";
+import { CustomerTypeRepository } from "../../repositories/configuration/CustomerTypeRepository";
+import { sequelize } from "../../config/database";
+import {CreateCustomerTypePayload, UpdateCustomerTypeStatePayload, UpdateCustomerTypePayload} from "../../validators/configuration/CustomerTypeValidator";
 
 
 export class CustomerTypeService {
+    private repo: CustomerTypeRepository;
+
+    constructor(repository: CustomerTypeRepository) {
+        this.repo = repository;
+    }
+
     async getAllCustomerTypes() {
-        const tiposCliente = await CustomerType.findAll({
-            attributes: ['id', 'name', 'description', 'color', 'state',
-                [Sequelize.fn('COUNT', Sequelize.col('customers.id')), 'uses']
-            ],
+        return await this.repo.getAllCustomerTypes();
+    }
 
-            include: [{ model: Customer, attributes: [] }],
-            group: ['CustomerType.id'],
-            order: [['state', 'DESC']]
+    async createCustomerType(data: CreateCustomerTypePayload, createdBy: number) {
+        const existingCustomerType = await this.repo.getCustomerTypeByName(data.name);
+        if (existingCustomerType) {
+            throw new Error("El tipo de cliente ya existe");
+        }
+
+        return await sequelize.transaction(async (transaction) => {
+            return await this.repo.createCustomerType(data, createdBy, transaction);
         });
-
-        return tiposCliente;
     }
 
-    async createCustomerType(data: { name: string, description: string, color: string }) {
-        const dataToSave = {
-            name: data.name,
-            description: data.description,
-            color: data.color,
-            createdBy: 1
-        };
+    async updateCustomerType(id: number, data: UpdateCustomerTypePayload) {
+        const existingCustomerType = await this.repo.getCustomerTypeByName(data.name, id);
+        if (existingCustomerType) {
+            throw new Error("El tipo de cliente ya existe");
+        }
 
-        await CustomerType.create(dataToSave);
-        return true;
-    }
+        return await sequelize.transaction(async (transaction) => {
+            const affectedRows = await this.repo.updateCustomerType(
+                id,
+                {
+                    name: data.name,
+                    description: data.description,
+                    color: data.color,
+                },
+                transaction,
+            );
 
-    async updateCustomerType(id: number, data: { name: string, description: string, color: string }) {
-
-        await CustomerType.update(
-            data,
-            {
-                where: {
-                    id: id
-                }
+            if (affectedRows === 0) {
+                throw new Error("No ha sido encontrado");
             }
-        );
-        return true;
+            return true;
+        });
     }
 
     async deleteCustomerType(id: number) {
+        return await sequelize.transaction(async (transaction) => {
+            const count = await this.repo.countCustomersByType(id, transaction);
 
-        const count = await Customer.count({
-            where: {
-                idCustomerType: id
+            if (count > 0) {
+                throw new Error("Este tipo de cliente esta en uso");
             }
-        });
 
-        if (count > 0) {
-            throw new Error("Este tipo de cliente esta en uso");
-        }
+            const rowDelete = await this.repo.deleteCustomerType(id, transaction);
 
-        const rowDelete = await CustomerType.destroy({
-            where: {
-                id: id
+            if (rowDelete === 0) {
+                throw new Error("No ha sido encontrado");
             }
+
+            return true;
         });
-
-        if (rowDelete === 0) {
-            throw new Error("No ha sido encontraado");
-        }
-
-        return true;
     }
 
-    async updateCustomerTypeState(id: number, state: number) {
-        await CustomerType.update({ state: state },
-            {
-                where: {
-                    id: id
-                }
+    async updateCustomerTypeState(id: number, state: UpdateCustomerTypeStatePayload["state"]) {
+        return await sequelize.transaction(async (transaction) => {
+            const affectedRows = await this.repo.updateCustomerTypeState(id, state, transaction);
+
+            if (affectedRows === 0) {
+                throw new Error("No ha sido encontrado");
             }
-        );
-        return true;
+
+            return true;
+        });
     }
 }

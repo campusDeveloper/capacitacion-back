@@ -1,14 +1,17 @@
 import { Router } from 'express';
+import { CustomerTypeController} from '../../controllers/configuration/CustomerTypeController';
+import { AuthMiddleware as isAuth } from '../../middlewares/AuthMiddleware';
+import { validateSchema, validateQuerySchema } from '../../middlewares/ValidateSchema';
+import { CustomerTypeValidator } from '../../validators/configuration/CustomerTypeValidator';
+import { CustomerTypeRepository } from '../../repositories/configuration/CustomerTypeRepository';
+import { CustomerTypeService } from '../../services/configuration/CustomerTypeService';
 
-import { CustomerTypeController } from '../../controllers/configuration/CustomerTypeController';
+const router = Router()
 
-const router = Router();
-const customerTypeController = new CustomerTypeController();
+router.get('/configuration/customer-types', isAuth, CustomerTypeController.getAll);
+router.post('/configuration/customer-type', isAuth, validateSchema(CustomerTypeValidator.createCustomerTypeSchema),CustomerTypeController.create);
+router.put('/configuration/customer-type/:idType/update',isAuth,validateSchema(CustomerTypeValidator.updateCustomerTypeSchema),CustomerTypeController.update);
+router.delete('/configuration/customer-type/:idType/delete',isAuth,validateSchema(CustomerTypeValidator.customerTypeIdSchema),CustomerTypeController.delete);
+router.put('/configuration/customer-type/:idType/state',isAuth,validateSchema(CustomerTypeValidator.updateCustomerTypeStateSchema),CustomerTypeController.updateState);
 
-
-router.get('/configuration/customer-types', (req, res) => customerTypeController.getAll(req, res));
-router.post('/configuration/customer-type', (req, res) => customerTypeController.create(req, res));
-router.put('/configuration/customer-type/:idType/update', (req, res) => customerTypeController.update(req, res));
-router.delete('/configuration/customer-type/:idType/delete', (req, res) => customerTypeController.delete(req, res));
-router.put('/configuration/customer-type/:idType/state', (req, res) => customerTypeController.updateState(req, res));
 export default router;

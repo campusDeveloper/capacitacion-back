@@ -1,137 +1,66 @@
-import { Request } from "express";
-import { Response } from "express";
+import { Request, Response } from "express";
 import { CustomerTypeService } from "../../services/configuration/CustomerTypeService";
+import { ApiResponse } from "../../utils/apiResponse";
+import { CustomerTypeRepository } from "../../repositories/configuration/CustomerTypeRepository";
 
+const service = new CustomerTypeService(new CustomerTypeRepository());
 
 export class CustomerTypeController {
-    async getAll(req: Request, res: Response) {
+    static async getAll(req: Request, res: Response) {
         try {
-            const service = new CustomerTypeService();
-
-            const tiposCliente = await service.getAllCustomerTypes();
-
-            return res.status(200).json({
-                message: "consultado correctamente",
-                data: tiposCliente
-            });
-
+            const data = await service.getAllCustomerTypes();
+            return ApiResponse.success(res, "Consultado correctamente", data);
         } catch (error) {
-
-            console.error("Error al consultar tipos de cliente:", error);
-            return res.status(500).json({
-                message: "Error interno del servidor al consultar los datos",
-                error: error
-            });
+            return ApiResponse.error(res, error);
         }
     }
 
-    async create(req: Request, res: Response) {
+    static async create(req: Request, res: Response) {
         try {
-            const service = new CustomerTypeService();
-
-            const bodyData = req.body;
-
-            if (!bodyData.name || !bodyData.description || !bodyData.color) {
-                return res.status(400).json({
-                    message: "Los campos 'name', 'description' y 'color' son obligatorios."
-                });
+            if (!req.user?.id) {
+                return ApiResponse.error(res, new Error("Usuario no identificado en la peticion"), 401);
             }
-            const result = await service.createCustomerType(bodyData);
 
-            return res.status(201).json({
-                message: "Almacenado correctamente",
-                data: result
-            });
-
+            const data = await service.createCustomerType(req.body, req.user.id);
+            return ApiResponse.success(res, "Guardado correctamente", data, 201);
         } catch (error) {
-            console.error("Error al crear tipo de Cliente", error);
-            return res.status(500).json({
-                message: "Error interno del servidor al crear datos",
-                error: error
-            });
+            return ApiResponse.error(res, error);
         }
     }
 
 
-    async update(req: Request, res: Response) {
+    static async update(req: Request, res: Response) {
         try {
-            const service = new CustomerTypeService();
-
             const id = Number(req.params.idType);
-            const bodyData = req.body;
-            const result = await service.updateCustomerType(id, bodyData);
-
-            return res.status(200).json({
-                message: "Actualizado correctamente",
-                data: result
-            });
-
+            const data = await service.updateCustomerType(id, req.body);
+            return ApiResponse.success(res, "Actualizado correctamente", data);
         } catch (error) {
-            console.error("Error al actualizar tipo de Cliente", error);
-            return res.status(500).json({
-                message: "Error interno del servidor al actualizar los datos",
-                error: error
-            });
+            return ApiResponse.error(res, error);
         }
     }
 
-    async delete(req: Request, res: Response) {
+    static async delete(req: Request, res: Response) {
         try {
-            const service = new CustomerTypeService();
             const id = Number(req.params.idType);
-
-            const result = await service.deleteCustomerType(id);
-
-            return res.status(200).json({
-                message: "Eliminado correctamente",
-                data: result
-            });
-
+            const data = await service.deleteCustomerType(id);
+            return ApiResponse.success(res, "Eliminado correctamente", data);
         } catch (error) {
-            if (error === "Este tipo de cliente esta en uso") {
-                return res.status(400).json({
-                    message: "Tipo de cliente en uso",
-                    data: false
-                });
-            }
-
-            if (error === "No ha sido encontrado") {
-                return res.status(404).json({
-                    message: error,
-                    data: false
-                });
-            }
-
-            console.error("Error al eliminar Tipo de cliente:", error);
-            return res.status(500).json({
-                message: "Error interno del servidor al eliminar los datos",
-                error: error
-            });
+            const statusCode =
+                error instanceof Error && error.message === "No ha sido encontrado" ? 404 : 400;
+            return ApiResponse.error(res, error, statusCode);
         }
     }
 
-    async updateState(req: Request, res: Response) {
-    try {
-        const service = new CustomerTypeService();
-        const id = Number(req.params.idType);
-        
-        const { state } = req.body;
-
-        const result = await service.updateCustomerTypeState(id, state);
-
-        return res.status(200).json({
-            message: "Estado actualizado correctamente",
-            data: result
-        });
-
-    } catch (error: any) {
-        console.error("Error al actualizar el estado:", error);
-        return res.status(500).json({
-            message: "Error interno al actualizar el estado",
-            error: error.message
-        });
+    static async updateState(req: Request, res: Response) {
+        try {
+            const id = Number(req.params.idType);
+            const { state } = req.body;
+            const data = await service.updateCustomerTypeState(id, state);
+            return ApiResponse.success(res, "Estado actualizado correctamente", data);
+        } catch (error) {
+            const statusCode =
+                error instanceof Error && error.message === "No ha sido encontrado" ? 404 : 400;
+            return ApiResponse.error(res, error, statusCode);
+        }
     }
 }
-
-}
-
