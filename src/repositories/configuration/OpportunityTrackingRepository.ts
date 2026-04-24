@@ -1,7 +1,6 @@
 import { Op } from "sequelize";
 import { OpportunityTracking } from "../../models/OpportunityTracking";
-import { Opportunity } from "../../models/Opportunity"
-import { addColors } from "winston/lib/winston/config";
+import { Opportunity } from "../../models/Opportunity";
 
 export class OpportunityTrackingRepository {
 
@@ -72,8 +71,10 @@ export class OpportunityTrackingRepository {
     }
 
     async updateState(idTracking: number, newState: number): Promise<void> {
-        { state: newState }
-        { where: { id: idTracking }}
+        await OpportunityTracking.update(
+            { state: newState },
+            { where: { id: idTracking, idOpportunityTracking: null } }
+        );
     }
 
     // DELETE /{idTracking}/delete
@@ -89,6 +90,77 @@ export class OpportunityTrackingRepository {
     async deleteParent(idTracking: number): Promise<void> {
         await OpportunityTracking.destroy({
             where: { id: idTracking, idOpportunityTracking: null}
+        });
+    }
+
+    // GET api/configuration/tracking-opportunity/{idTracking}/detail
+
+    async getChildrenDetail(idTracking: number) {
+        return OpportunityTracking.findAll({
+            where: { idOpportunityTracking: idTracking }
+        });
+    }
+
+    async countUsesByChild(idChild: number) {
+        return Opportunity.count({
+            where: { idOpportunityTracking: idChild }
+        });
+    }
+
+    async findChildById(idChild: number, idParent: number): Promise<OpportunityTracking | null> {
+        return OpportunityTracking.findOne({
+            where: { id: idChild, idOpportunityTracking: idParent }
+        });
+    }
+
+    async updateChild(idChild: number, idParent: number, data: { name: string; color: string }): Promise<void> {
+        await OpportunityTracking.update(
+            { name: data.name, color: data.color },
+            { where: { id: idChild, idOpportunityTracking: idParent } }
+        );
+    }
+
+    async destroyChild(idChild: number, idParent: number): Promise<void> {
+        await OpportunityTracking.destroy({
+            where: { id: idChild, idOpportunityTracking: idParent }
+        });
+    }
+
+    async getChildrenByParent(parentId: number): Promise<OpportunityTracking[]> {
+        return OpportunityTracking.findAll({
+            where: { idOpportunityTracking: parentId },
+            attributes: ["id", "name", "color", "state", "idOpportunityTracking"],
+            order: [["id", "ASC"]]
+        });
+    }
+
+    async findChildBy(idTracking: number): Promise<OpportunityTracking | null> {
+        return OpportunityTracking.findOne({
+            where: {
+                id: idTracking,
+                idOpportunityTracking: { [Op.ne]: null }
+            }
+        });
+    }
+
+    async updateChildById(idTracking: number, data: { name: string; color: string }): Promise<void> {
+        await OpportunityTracking.update(
+            { name: data.name, color: data.color },
+            {
+                where: {
+                    id: idTracking,
+                    idOpportunityTracking: { [Op.ne]: null }
+                }
+            }
+        );
+    }
+
+    async deleteChild(idTracking: number): Promise<void> {
+        await OpportunityTracking.destroy({
+            where: {
+                id: idTracking,
+                idOpportunityTracking: { [Op.ne]: null }
+            }
         });
     }
 
