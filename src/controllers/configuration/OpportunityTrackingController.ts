@@ -1,15 +1,14 @@
 import { NextFunction, Request, Response } from "express";
 import { OpportunityTrackingServices } from "../../services/configuration/OpportunityTrackingServices";
-
+import { ApiResponse } from "../../utils/apiResponse";
 
 const service = new OpportunityTrackingServices();
-const HEX_COLOR_REGEX = /^#?([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/;
 
 export class OpportunityTrackingController {
     async getList(req: Request, res: Response, next: NextFunction) {
         try {
             const data = await service.getList();
-            res.status(200).json({ message: "OK", data });
+            return ApiResponse.success(res, "OK", data);
         } catch (err) { 
             next(err);  
         }
@@ -20,26 +19,9 @@ export class OpportunityTrackingController {
             const { name, color, sub = [] } = req.body;
             const createdBy = req.user!.id;
 
-            const errors: string[] = [];
-
-            if (!name)             errors.push("El campo name es requerido");
-            if (name?.length > 40) errors.push("El campo name no puede superar 40 caracteres");
-            if (!color)            errors.push("El campo color es requerido");
-            if (color && !HEX_COLOR_REGEX.test(color))
-                                   errors.push("El campo color debe ser hexadecimal válido");
-
-            sub.forEach((item: any, index: number) => {
-                if (!item.name)  errors.push(`sub[${index}]: name es requerido`);
-                if (!item.color) errors.push(`sub[${index}]: color es requerido`);
-            });
-
-            if (errors.length > 0) {
-                return res.status(400).json({ message: errors.join(", "), data: false });
-            }
-
             await service.store({ name, color, sub, createdBy });
 
-            return res.status(200).json({ message: "Almacenado correctamente", data: true });
+            return ApiResponse.success(res, "Almacenado correctamente", true);
         } catch (err) {
             next(err);
         }
@@ -50,21 +32,9 @@ export class OpportunityTrackingController {
             const idTracking = Number(req.params.idTracking);
             const { name, color } = req.body;
 
-            const errors: string[] = [];
-
-            if (!name)             errors.push("El campo name es requerido");
-            if (name?.length > 40) errors.push("El campo name no puede superar 40 caracteres");
-            if (!color)            errors.push("El campo color es requerido");
-            if (color && !HEX_COLOR_REGEX.test(color))
-                                   errors.push("El campo color debe ser hexadecimal válido");
-
-            if (errors.length > 0) {
-                return res.status(400).json({ message: errors.join(", "), data: false });
-            }
-
             await service.update(idTracking, { name, color });
 
-            return res.status(200).json({ message: "Actualizado correctamente", data: true });
+            return ApiResponse.success(res, "Actualizado correctamente", true);
         } catch (err) {
             next(err);
         }
@@ -76,7 +46,7 @@ export class OpportunityTrackingController {
 
             await service.updateState(idTracking);
 
-            return res.status(200).json({"message": "Actualizado correctamente", data:true })
+            return ApiResponse.success(res, "Actualizado correctamente", true);
         } catch(err) {
             next(err);
         }
@@ -88,7 +58,7 @@ export class OpportunityTrackingController {
 
             await service.delete(idTracking);
 
-            return res.status(200).json({ message: "Eliminado correctamente", data: true });
+            return ApiResponse.success(res, "Eliminado correctamente", true);
         } catch (err) {
             next(err);
         }
@@ -99,7 +69,7 @@ export class OpportunityTrackingController {
             const idTracking = Number(req.params.idTracking);
 
             const data = await service.getDetails(idTracking);
-            return res.status(200).json({ message: "Consultado Correctamente", data })
+            return ApiResponse.success(res, "Consultado Correctamente", data);
 
         }catch(err){
             next(err)
@@ -112,18 +82,9 @@ export class OpportunityTrackingController {
             const { name, color } = req.body;
             const createdBy = req.user!.id;
 
-            const errors: string[] = [];
-
-            if (!name) errors.push("El campo name es requerido");
-            if (!color) errors.push("El campo color es requerido");
-
-            if (errors.length > 0) {
-                return res.status(400).json({ message: errors.join(", "), data: false });
-            }
-
             await service.storeSubState(idParent, { name, color, createdBy });
 
-            return res.status(200).json({ message: "Almacenado correctamente", data: true });
+            return ApiResponse.success(res, "Almacenado correctamente", true);
         } catch (err) {
             next(err);
         }
@@ -134,22 +95,9 @@ export class OpportunityTrackingController {
             const idParent = Number(req.params.idTracking);
             const { idTracking: idChild, name, color } = req.body;
 
-            const errors: string[] = [];
-
-            if (!idChild)          errors.push("El campo idTracking (hijo) es requerido");
-            if (!name)             errors.push("El campo name es requerido");
-            if (name?.length > 40) errors.push("El campo name no puede superar 40 caracteres");
-            if (!color)            errors.push("El campo color es requerido");
-            if (color && !HEX_COLOR_REGEX.test(color))
-                                   errors.push("El campo color debe ser hexadecimal válido");
-
-            if (errors.length > 0) {
-                return res.status(400).json({ message: errors.join(", "), data: false });
-            }
-
             await service.updateSubState(idParent, Number(idChild), { name, color });
 
-            return res.status(200).json({ message: "Actualizado correctamente", data: true });
+            return ApiResponse.success(res, "Actualizado correctamente", true);
         } catch (err) {
             next(err);
         }
@@ -162,7 +110,7 @@ export class OpportunityTrackingController {
         
             await service.deleteSubState(idParent, idChild);
         
-            return res.status(200).json({ message: "Eliminado correctamente", data: true });
+            return ApiResponse.success(res, "Eliminado correctamente", true);
         } catch (err) {
             next(err);
         }
@@ -173,7 +121,7 @@ export class OpportunityTrackingController {
             const parentId = Number(req.params.parentId);
             const data = await service.getChildren(parentId);
 
-            return res.status(200).json({ message: "Consultado Correctamente", data });
+            return ApiResponse.success(res, "Consultado Correctamente", data);
         } catch (err) {
             next(err);
         }
@@ -184,18 +132,6 @@ export class OpportunityTrackingController {
             const { name, color, idOpportunityTracking } = req.body;
             const createdBy = req.user!.id;
 
-            const errors: string[] = [];
-
-            if (!name) errors.push("El campo name es requerido");
-            if (name?.length > 40) errors.push("El campo name no puede superar 40 caracteres");
-            if (!color) errors.push("El campo color es requerido");
-            if (color && !HEX_COLOR_REGEX.test(color)) errors.push("El campo color debe ser hexadecimal válido");
-            if (!idOpportunityTracking) errors.push("El campo idOpportunityTracking es requerido");
-
-            if (errors.length > 0) {
-                return res.status(400).json({ message: errors.join(", "), data: false });
-            }
-
             await service.storeChild({
                 name,
                 color,
@@ -203,7 +139,7 @@ export class OpportunityTrackingController {
                 createdBy
             });
 
-            return res.status(200).json({ message: "Almacenado correctamente", data: true });
+            return ApiResponse.success(res, "Almacenado correctamente", true);
         } catch (err) {
             next(err);
         }
@@ -214,20 +150,9 @@ export class OpportunityTrackingController {
             const idTracking = Number(req.params.idTracking);
             const { name, color } = req.body;
 
-            const errors: string[] = [];
-
-            if (!name) errors.push("El campo name es requerido");
-            if (name?.length > 40) errors.push("El campo name no puede superar 40 caracteres");
-            if (!color) errors.push("El campo color es requerido");
-            if (color && !HEX_COLOR_REGEX.test(color)) errors.push("El campo color debe ser hexadecimal válido");
-
-            if (errors.length > 0) {
-                return res.status(400).json({ message: errors.join(", "), data: false });
-            }
-
             await service.updateChild(idTracking, { name, color });
 
-            return res.status(200).json({ message: "Actualizado correctamente", data: true });
+            return ApiResponse.success(res, "Actualizado correctamente", true);
         } catch (err) {
             next(err);
         }
@@ -239,7 +164,7 @@ export class OpportunityTrackingController {
 
             await service.deleteChild(idTracking);
 
-            return res.status(200).json({ message: "Eliminado correctamente", data: true });
+            return ApiResponse.success(res, "Eliminado correctamente", true);
         } catch (err) {
             next(err);
         }

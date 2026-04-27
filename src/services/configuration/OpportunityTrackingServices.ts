@@ -1,5 +1,5 @@
-import { OpportunityTracking } from "../../models/OpportunityTracking";
 import { OpportunityTrackingRepository } from "../../repositories/configuration/OpportunityTrackingRepository";
+import { sequelize } from "../../config/database";
 
 export class OpportunityTrackingServices {
     private repository = new OpportunityTrackingRepository();
@@ -35,45 +35,53 @@ export class OpportunityTrackingServices {
         sub: { name: string; color: string }[];
         createdBy: number;
     }): Promise<void> {
-        const parent = await this.repository.createParent({
-            name: payload.name,
-            color: payload.color,
-            createdBy: payload.createdBy,
-        });
-
-        for (const sub of payload.sub) {
-            await this.repository.createChild({
-                name: sub.name,
-                color: sub.color,
-                idOpportunityTracking: parent.id,
+        await sequelize.transaction(async (transaction) => {
+            const parent = await this.repository.createParent({
+                name: payload.name,
+                color: payload.color,
                 createdBy: payload.createdBy,
-            });
-        }
+            }, transaction);
+
+            for (const sub of payload.sub) {
+                await this.repository.createChild({
+                    name: sub.name,
+                    color: sub.color,
+                    idOpportunityTracking: parent.id,
+                    createdBy: payload.createdBy,
+                }, transaction);
+            }
+        });
     }
 
     async update(idTracking: number, payload: {name: string, color: string}): Promise<void> {
-        await this.repository.updateParent(idTracking, payload);
+        await sequelize.transaction(async (transaction) => {
+            await this.repository.updateParent(idTracking, payload, transaction);
+        });
     }
 
     async updateState(idTracking: number): Promise<void> {
-        const parent = await this.repository.findParentBy(idTracking); 
+        await sequelize.transaction(async (transaction) => {
+            const parent = await this.repository.findParentBy(idTracking, transaction); 
 
-        if (!parent) throw new Error("Estado no encontrado");
+            if (!parent) throw new Error("Estado no encontrado");
 
-        const newState = parent.state === 1 ? 0 : 1;
-        await this.repository.updateState(idTracking, newState);
+            const newState = parent.state === 1 ? 0 : 1;
+            await this.repository.updateState(idTracking, newState, transaction);
+        });
     }
 
     async delete(idTracking: number): Promise <void> {
-        const parent = await this.repository.findParentBy(idTracking);
-        if (!parent) throw new Error("Estado no encontrado");
+        await sequelize.transaction(async (transaction) => {
+            const parent = await this.repository.findParentBy(idTracking, transaction);
+            if (!parent) throw new Error("Estado no encontrado");
 
-        const childrensIds = await this.repository.getChildrensIds(idTracking);
+            const childrensIds = await this.repository.getChildrensIds(idTracking, transaction);
 
-        const uses = await this.repository.countUses(childrensIds);
-        if (uses > 0 ) throw new Error("No se puede eliminar porque uno o más sub-estados estan siendo usados");
+            const uses = await this.repository.countUses(childrensIds, transaction);
+            if (uses > 0 ) throw new Error("No se puede eliminar porque uno o más sub-estados estan siendo usados");
 
-        await this.repository.deleteParent(idTracking);
+            await this.repository.deleteParent(idTracking, transaction);
+        });
     }
     
     async getDetails(idTracking: number) {
@@ -101,44 +109,50 @@ export class OpportunityTrackingServices {
     }
 
     async storeSubState(idParent: number, payload: { name: string; color: string; createdBy: number }): Promise<void> {
-        const parent = await this.repository.findParentBy(idParent);
-        if (!parent) {
-            const error: any = new Error("Estado padre no encontrado");
-            error.status = 404;
-            throw error;
-        }
+        await sequelize.transaction(async (transaction) => {
+            const parent = await this.repository.findParentBy(idParent, transaction);
+            if (!parent) {
+                const error: any = new Error("Estado padre no encontrado");
+                error.status = 404;
+                throw error;
+            }
 
-        await this.repository.createChild({
-            name: payload.name,
-            color: payload.color,
-            idOpportunityTracking: idParent,
-            createdBy: payload.createdBy
+            await this.repository.createChild({
+                name: payload.name,
+                color: payload.color,
+                idOpportunityTracking: idParent,
+                createdBy: payload.createdBy
+            }, transaction);
         });
     }
 
     async updateSubState(idParent: number, idChild: number, payload: { name: string; color: string }): Promise<void> {
-        const child = await this.repository.findChildById(idChild, idParent);
-        if (!child) throw new Error("Sub-estado no encontrado");
+        await sequelize.transaction(async (transaction) => {
+            const child = await this.repository.findChildById(idChild, idParent, transaction);
+            if (!child) throw new Error("Sub-estado no encontrado");
 
-        await this.repository.updateChild(idChild, idParent, payload);
+            await this.repository.updateChild(idChild, idParent, payload, transaction);
+        });
     }
 
     async deleteSubState(idParent: number, idChild: number): Promise<void> {
-        const child = await this.repository.findChildById(idChild, idParent);
-        if (!child) {
-            const error: any = new Error("Sub-estado no encontrado");
-            error.status = 404;
-            throw error;
-        }
+        await sequelize.transaction(async (transaction) => {
+            const child = await this.repository.findChildById(idChild, idParent, transaction);
+            if (!child) {
+                const error: any = new Error("Sub-estado no encontrado");
+                error.status = 404;
+                throw error;
+            }
 
-        const uses = await this.repository.countUsesByChild(idChild);
-        if (uses > 0) {
-            const error: any = new Error("No se puede eliminar porque el sub-estado tiene usos registrados");
-            error.status = 400;
-            throw error;
-        }
+            const uses = await this.repository.countUsesByChild(idChild, transaction);
+            if (uses > 0) {
+                const error: any = new Error("No se puede eliminar porque el sub-estado tiene usos registrados");
+                error.status = 400;
+                throw error;
+            }
 
-        await this.repository.destroyChild(idChild, idParent);
+            await this.repository.destroyChild(idChild, idParent, transaction);
+        });
     }
 
     async getChildren(parentId: number) {
@@ -169,42 +183,48 @@ export class OpportunityTrackingServices {
         idOpportunityTracking: number;
         createdBy: number;
     }): Promise<void> {
-        const parent = await this.repository.findParentBy(payload.idOpportunityTracking);
-        if (!parent) {
-            const error: any = new Error("Estado padre no encontrado");
-            error.status = 404;
-            throw error;
-        }
+        await sequelize.transaction(async (transaction) => {
+            const parent = await this.repository.findParentBy(payload.idOpportunityTracking, transaction);
+            if (!parent) {
+                const error: any = new Error("Estado padre no encontrado");
+                error.status = 404;
+                throw error;
+            }
 
-        await this.repository.createChild(payload);
+            await this.repository.createChild(payload, transaction);
+        });
     }
 
     async updateChild(idTracking: number, payload: { name: string; color: string }): Promise<void> {
-        const child = await this.repository.findChildBy(idTracking);
-        if (!child) {
-            const error: any = new Error("Estado hijo no encontrado");
-            error.status = 404;
-            throw error;
-        }
+        await sequelize.transaction(async (transaction) => {
+            const child = await this.repository.findChildBy(idTracking, transaction);
+            if (!child) {
+                const error: any = new Error("Estado hijo no encontrado");
+                error.status = 404;
+                throw error;
+            }
 
-        await this.repository.updateChildById(idTracking, payload);
+            await this.repository.updateChildById(idTracking, payload, transaction);
+        });
     }
 
     async deleteChild(idTracking: number): Promise<void> {
-        const child = await this.repository.findChildBy(idTracking);
-        if (!child) {
-            const error: any = new Error("Estado hijo no encontrado");
-            error.status = 404;
-            throw error;
-        }
+        await sequelize.transaction(async (transaction) => {
+            const child = await this.repository.findChildBy(idTracking, transaction);
+            if (!child) {
+                const error: any = new Error("Estado hijo no encontrado");
+                error.status = 404;
+                throw error;
+            }
 
-        const uses = await this.repository.countUsesByChild(idTracking);
-        if (uses > 0) {
-            const error: any = new Error("No se puede eliminar porque el estado hijo tiene usos registrados");
-            error.status = 400;
-            throw error;
-        }
+            const uses = await this.repository.countUsesByChild(idTracking, transaction);
+            if (uses > 0) {
+                const error: any = new Error("No se puede eliminar porque el estado hijo tiene usos registrados");
+                error.status = 400;
+                throw error;
+            }
 
-        await this.repository.deleteChild(idTracking);
+            await this.repository.deleteChild(idTracking, transaction);
+        });
     }
 }
