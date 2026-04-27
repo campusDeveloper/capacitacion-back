@@ -12,11 +12,15 @@ import {
     HasMany, Comment, BelongsToMany
 } from 'sequelize-typescript'
 
+import { Headquarter } from './Headquarter';
+import { UserHeadquarter } from './UserHeadquarter';
+
 
 @Table({
     tableName: 'users',
     timestamps: true
 })
+
 export class User extends Model {
     @PrimaryKey
     @AutoIncrement
@@ -72,5 +76,9 @@ export class User extends Model {
     @AllowNull(true)
     @Column(DataType.DATE)
     updatedAt!: Date
+
+
+    @BelongsToMany(() => Headquarter, () => UserHeadquarter)
+    headquarters!: Headquarter[];
 
 }
