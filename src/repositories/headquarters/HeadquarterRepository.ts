@@ -62,4 +62,74 @@ export class HeadquarterRepository {
       { transaction }
     );
   }
+
+  // ─── NUEVOS MÉTODOS TAREA B: DETALLE DE CONOCIMIENTO ─────────────────────
+
+  // 1. Obtener categorías y sus documentos anidados
+  async getKnowledgeWithDocs(idHeadquarter: number | null): Promise<HeadquarterKnowledge[]> {
+    return await HeadquarterKnowledge.findAll({
+      where: { idHeadquarter }, 
+      include: [
+        {
+          model: Doc,
+          as: 'docs', 
+          required: false, 
+        },
+      ],
+      order: [
+        ['createdAt', 'ASC'], 
+      ],
+    });
+  }
+
+
+  async getKnowledgeById(idKnowledge: number, transaction?: Transaction): Promise<HeadquarterKnowledge | null> {
+    return await HeadquarterKnowledge.findByPk(idKnowledge, { transaction });
+  }
+
+  async switchKnowledgeState(knowledge: HeadquarterKnowledge, transaction?: Transaction): Promise<HeadquarterKnowledge> {
+    return await knowledge.update(
+      {
+        state: knowledge.state === 1 ? 0 : 1, 
+      },
+      { transaction }
+    );
+  }
+
+  async deleteKnowledge(knowledge: HeadquarterKnowledge, transaction?: Transaction): Promise<void> {
+    await knowledge.destroy({ transaction }); 
+  }
+
+
+  async getDocById(idDoc: number, transaction?: Transaction): Promise<Doc | null> {
+    return await Doc.findByPk(idDoc, { transaction });
+  }
+
+  async switchDocState(doc: Doc, transaction?: Transaction): Promise<Doc> {
+    return await doc.update(
+      {
+        state: doc.state === 1 ? 0 : 1, 
+      },
+      { transaction }
+    );
+  }
+
+  //Docs
+  async deleteDoc(doc: Doc, transaction?: Transaction): Promise<void> {
+    await doc.destroy({ transaction }); 
+  }
+
+  async createKnowledge(data: any, transaction?: Transaction): Promise<HeadquarterKnowledge> {
+    return await HeadquarterKnowledge.create(data, { transaction });
+  }
+
+  async updateKnowledge(knowledge: HeadquarterKnowledge, data: any, transaction?: Transaction): Promise<HeadquarterKnowledge> {
+    return await knowledge.update(data, { transaction });
+  }
+
+  async createDoc(data: any, transaction?: Transaction): Promise<Doc> {
+    return await Doc.create(data, { transaction });
+  }
+
+
 }
