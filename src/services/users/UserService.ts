@@ -3,12 +3,35 @@ import { UserResponseDto } from "../../validators/AuthValidators"
 import { IUserBody, IUserHeadUpdateBody, IUserUpdateBody, IUserSubHeadUpdateBody } from "../../interfaces/users/User";
 import { sequelize } from "../../config/database";
 import { GetUsersQueryPayload } from "../../validators/users/UserValidator";
+import { Headquarter } from "../../models/Headquarter";
 
 export class UserService {
   private repo: UserRepository
 
   constructor(repository: UserRepository) {
     this.repo = repository
+  }
+
+  async getAllUsers() {
+      const usersDB = await this.repo.getAllUsers()
+
+      const usersClean = usersDB.map((user) => {
+      const userData = user.toJSON(); 
+        const mainHq = userData.headquarters.find((hq: any) => hq.usersheadquarters.main === 1
+        )
+
+        return {
+          id: userData.id,
+          type: userData.type,
+          name: userData.name,
+          email: userData.email,
+          headquarter: mainHq ? mainHq.name : null, // si se encuentra una sede y hay datos en la variable mainHq, se trae el nombre, y si no encontró nada, asígnalo se asigna como nulo
+          paymentAgent: userData.paymentAgent,
+          state: userData.state
+        }
+    });
+
+    return usersClean;
   }
 
   async getUserById(id: number) {
@@ -20,6 +43,7 @@ export class UserService {
 
     return user
   }
+
   //- Crear usuario
   async createUser(body: IUserBody, createdBy: number) {
     const existingUser = await this.repo.getUserByEmail(body.email)

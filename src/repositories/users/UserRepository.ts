@@ -6,8 +6,12 @@ import { sequelize } from "../../config/database"
 import { id } from "zod/v4/locales";
 import { GetUsersQueryPayload } from "../../validators/users/UserValidator";
 import bcrypt from "bcrypt";
+import { Headquarter } from "../../models/Headquarter";
 
 export class UserRepository {
+  static getAllUsers() {
+    throw new Error("Method not implemented.");
+  }
   async getUserById(id: number) {
     const user = await User.findByPk(id, {
   attributes: [
@@ -29,6 +33,19 @@ return {
   modules: (plain.permissions ?? []).map((p: { module: number }) => p.module)
 };
   }
+
+  //Aqui obtengo todos los usuarios
+  async getAllUsers() {
+    return await User.findAll({
+          attributes: ['id', 'type', 'name', 'state', 'email', 'specialAgent', 'paymentAgent'],
+      
+      include: [{model: Headquarter,
+      through: {attributes: ['main']}
+          }],
+      order: [['state', 'DESC'], ['name', 'ASC']]
+        });
+  }
+
   //-Obtener uno por idUser
   async getUserByIdUser(idUser: number, transaction?: Transaction): Promise<User | null> {
     return await User.findByPk(idUser, {

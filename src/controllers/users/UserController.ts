@@ -28,8 +28,8 @@ export class UserController {
   //- Listar todo
   static async getAllUsers(req: Request, res: Response): Promise<string | any> {
     try {
-      const data = await service.getAllUsers(req.query as unknown as GetUsersQueryPayload);
-      return ApiResponse.success(res, "Consultado correctamente", data);
+      const data = await service.getAllUsers();
+      return ApiResponse.success(res, "Consultados correctamente", data);
     } catch (error) {
       return ApiResponse.error(res, error);
     }

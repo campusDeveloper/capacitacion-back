@@ -4,9 +4,8 @@ import { Headquarter } from './Headquarter';
 
 
 @Table({
-  tableName: 'users_headquarters',
-  timestamps: true,
-  underscored: true
+  tableName: 'usersheadquarters',
+  timestamps: true
 })
 
 export class UserHeadquarter extends Model {
