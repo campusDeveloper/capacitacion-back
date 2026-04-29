@@ -5,7 +5,7 @@ import { Headquarter } from './Headquarter';
 
 @Table({
   tableName: 'usersheadquarters',
-  timestamps: true
+  timestamps: false
 })
 
 export class UserHeadquarter extends Model {
@@ -25,7 +25,8 @@ export class UserHeadquarter extends Model {
     idUser!: number;
 
     @ForeignKey(() => Headquarter)
-    @Column({type: DataType.TINYINT.UNSIGNED})
+    @AllowNull(false)
+    @Column({type: DataType.INTEGER.UNSIGNED})
     IdHeadquarter!: number;
 
     @AllowNull(true)

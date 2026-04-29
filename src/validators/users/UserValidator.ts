@@ -35,7 +35,8 @@ export class UserValidator {
         mainHeadquarter: z.coerce
             .number()
             .refine((v) => !Number.isNaN(v), { message: 'es requerido' })
-            .int('debe ser número entero'),
+            .int('debe ser número entero')
+            .positive('debe ser un número positivo'),
 
         specialAgent: z.coerce
             .number()
@@ -53,6 +54,7 @@ export class UserValidator {
                     .number()
                     .refine((v) => !Number.isNaN(v), { message: 'es requerido' })
                     .int('debe ser número entero')
+                    .positive('debe ser un número positivo')
             )
             .optional(),
 
@@ -81,7 +83,8 @@ export class UserValidator {
         mainHeadquarter: z.coerce
             .number()
             .refine((v) => !Number.isNaN(v), { message: 'es requerido' })
-            .int('debe ser número entero'),
+            .int('debe ser número entero')
+            .positive('debe ser un número positivo'),
 
         specialAgent: z.coerce
             .number()
@@ -97,18 +100,21 @@ export class UserValidator {
         idHeadquarter: z.coerce
             .number()
             .refine((v) => !Number.isNaN(v), { message: 'es requerido' })
-            .int('debe ser número entero'),
+            .int('debe ser número entero')
+            .positive('debe ser un número positivo'),
     });
     static UserSubHeadUpdateSchema = z.object({
         idHeadquarter: z.coerce
             .number()
             .refine((v) => !Number.isNaN(v), { message: 'es requerido' })
-            .int('debe ser número entero'),
+            .int('debe ser número entero')
+            .positive('debe ser un número positivo'),
 
         value: z.coerce
             .number()
             .refine((v) => !Number.isNaN(v), { message: 'es requerido' })
-            .int('debe ser número entero'),
+            .int('debe ser número entero')
+            .refine((v) => v === 0 || v === 1, { message: 'debe ser 0 o 1' }),
     });
 
     static getUserQuerySchema = z.object({

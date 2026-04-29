@@ -1,17 +1,11 @@
-import { col, fn, literal, Transaction, Op } from "sequelize";
+import { Transaction, Op } from "sequelize";
 import { User } from "../../models/User";
-import { UserResponseDto } from "../../validators/AuthValidators";
-import { IUserBody, IUserHeadUpdateBody, IUserUpdateBody, IUserSubHeadUpdateBody } from "../../interfaces/users/User";
-import { sequelize } from "../../config/database"
-import { id } from "zod/v4/locales";
-import { GetUsersQueryPayload } from "../../validators/users/UserValidator";
+import { IUserBody, IUserUpdateBody } from "../../interfaces/users/User";
 import bcrypt from "bcrypt";
 import { Headquarter } from "../../models/Headquarter";
+import { UserHeadquarter } from "../../models/UserHeadquarter";
 
 export class UserRepository {
-  static getAllUsers() {
-    throw new Error("Method not implemented.");
-  }
   async getUserById(id: number) {
     const user = await User.findByPk(id, {
   attributes: [
@@ -46,41 +40,58 @@ return {
         });
   }
 
+  // Cambiar estado de usuario
+    async updateStateUser (idUser: number, state: number) {
+      return await User.update(
+        { state: state },
+        {
+          where: {
+          id: idUser
+          }
+        }
+      );
+    }
+
   //-Obtener uno por idUser
   async getUserByIdUser(idUser: number, transaction?: Transaction): Promise<User | null> {
     return await User.findByPk(idUser, {
       transaction,
+      include: [{ model: Headquarter, through: { attributes: ['main'] } }]
     });
   }
   //- Obtener uno por correo
-  async getUserByEmail(email: string): Promise<User | null> {
+  async getUserByEmail(email: string, transaction?: Transaction): Promise<User | null> {
     return await User.findOne({
       where: { email },
-      raw: true
+      transaction
     })
+  }
+
+  async getHeadquartersByIds(ids: number[], transaction?: Transaction): Promise<Headquarter[]> {
+    return await Headquarter.findAll({
+      where: { id: { [Op.in]: ids } },
+      transaction,
+    });
   }
 
   //-Crear uno
   async createUser(data: IUserBody, createdBy: number, transaction?: Transaction) {
     const SALT_ROUNDS = 10;
-
     const hashedPassword = await bcrypt.hash(data.password, SALT_ROUNDS);
 
-    return sequelize.transaction(async (transaction) => {
-      const UserData: any = {
-        name: data.name,
-        type: data.type,
-        state: data.state ?? 1,
-        email: data.email,
-        password: hashedPassword,
-        specialAgent: data.specialAgent,
-        paymentAgent: data.paymentAgent,
-        createdBy: createdBy,
-      };
-      const usuarioresult = await User.create(UserData, { transaction });
-     
-      return usuarioresult;
-    })
+    const UserData: any = {
+      name: data.name,
+      type: data.type,
+      state: data.state ?? 1,
+      email: data.email,
+      password: hashedPassword,
+      specialAgent: data.specialAgent,
+      paymentAgent: data.paymentAgent,
+      createdBy: createdBy,
+    };
+    const usuarioresult = await User.create(UserData, { transaction });
+
+    return usuarioresult;
   }
   //-Actualizar uno
   async updateUser(idUser: number, data: IUserUpdateBody, updatedBy: number, transaction?: Transaction) {
@@ -92,7 +103,6 @@ return {
       email: data.email,
       specialAgent: data.specialAgent,
       paymentAgent: data.paymentAgent,
-      updatedBy: updatedBy,
     };
 
     if (data.password !== '' && data.password !== null && data.password !== undefined) {
@@ -122,9 +132,11 @@ return {
     });
 
   }
-  
+  // eliminar usuaario
   async deleteUser(idUser: number, transaction?: Transaction) {
-    return await User.destroy({ where: { id: idUser }, transaction });
+    return await User.destroy(
+      { where: { id: idUser },
+       transaction });
   }
   //-Cambio de estado de usuario
   async switchStatus(idUser: number, userId: number, transaction?: Transaction) {
@@ -137,9 +149,65 @@ return {
     return await user.update(
       {
         state: user.state ? 0 : 1,
-        updatedBy: userId,
       },
       { transaction }
     );
+  }
+
+  async getUserHeadquarter(idUser: number, idHeadquarter: number, transaction?: Transaction): Promise<UserHeadquarter | null> {
+    return await UserHeadquarter.findOne({
+      where: { idUser, IdHeadquarter: idHeadquarter },
+      transaction,
+    });
+  }
+
+  async assignHeadquarters(data: Array<{ idUser: number; idHeadquarter: number; main: number; createdBy: number }>, transaction?: Transaction) {
+    const records = data.map(item => ({
+      idUser: item.idUser,
+      IdHeadquarter: item.idHeadquarter,
+      main: item.main,
+      createdBy: item.createdBy,
+      createdAt: new Date()
+    }));
+    await UserHeadquarter.bulkCreate(records, { transaction });
+  }
+
+  async clearMainHeadquarter(idUser: number, transaction?: Transaction) {
+    return await UserHeadquarter.update(
+      { main: 0 },
+      { where: { idUser, main: 1 }, transaction }
+    );
+  }
+
+  async createUserHeadquarter(data: { idUser: number; idHeadquarter: number; main: number; createdBy: number }, transaction?: Transaction) {
+    return await UserHeadquarter.create(
+      {
+        idUser: data.idUser,
+        IdHeadquarter: data.idHeadquarter,
+        main: data.main,
+        createdBy: data.createdBy,
+        createdAt: new Date(),
+      },
+      { transaction }
+    );
+  }
+
+  async updateUserHeadquarter(
+    idUser: number,
+    idHeadquarter: number,
+    data: { main: number },
+    transaction?: Transaction
+  ) {
+    return await UserHeadquarter.update(
+      { main: data.main },
+      { where: { idUser, IdHeadquarter: idHeadquarter }, transaction }
+    );
+  }
+
+  async deleteUserHeadquarter(idUser: number, idHeadquarter: number, transaction?: Transaction) {
+    return await UserHeadquarter.destroy({
+      where: { idUser, IdHeadquarter: idHeadquarter, main: 0 },
+      transaction,
+    });
   }
 }

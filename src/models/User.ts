@@ -51,12 +51,12 @@ export class User extends Model {
     @Index
 
     @AllowNull(false)
-    @Comment("	0=No 1=Si")
+    @Comment("0 =No 1 =Si")
     @Column({ type: DataType.TINYINT.UNSIGNED, defaultValue: 1 })
     specialAgent!: number
 
     @AllowNull(false)
-    @Comment("	0=No 1=Si")
+    @Comment("0 =No 1 =Si")
     @Column({ type: DataType.TINYINT.UNSIGNED, defaultValue: 1 })
     paymentAgent!: number
 
@@ -70,12 +70,12 @@ export class User extends Model {
     updatedBy?: number
 
     @AllowNull(false)
-    @Column(DataType.DATE)
-    createdAt!: Date
+    @Column({type: DataType.DATE, defaultValue: DataType.NOW})
+    createdAt!: Date;
 
-    @AllowNull(true)
-    @Column(DataType.DATE)
-    updatedAt!: Date
+    @AllowNull(false)
+    @Column({type: DataType.DATE, defaultValue: DataType.NOW})
+    updatedAt!: Date;
 
 
     @BelongsToMany(() => Headquarter, () => UserHeadquarter)
