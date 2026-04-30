@@ -22,6 +22,7 @@ export class HeadquarterService {
 
     async getUserHeadquarters(idUser: number): Promise<IUserHeadquartersResponse> {
         this.validatePositiveInteger(idUser, "idUser");
+        await this.validateUserExists(idUser);
 
         const records = await this.repository.getUserHeadquarters(idUser);
         const mainRecord = records.find((record) => record.main === 1);
