@@ -28,6 +28,27 @@ return {
 };
   }
 
+  // En tu repositorio de la relación Usuario-Sede
+  async getHeadquartersByUserId(idUser: number, transaction?: Transaction) {
+  // Asegúrate de usar el modelo de la tabla intermedia (usersHeadquarters)
+    return await UserHeadquarter.findAll({
+    where: { idUser: idUser }, // Buscamos todas las filas de este usuario
+    attributes: ['idHeadquarter', 'main'], // Solo necesitamos el ID de la sede y si es principal
+    transaction,
+  });
+  }
+
+
+  //Trae solamente las sedes que estan activas 
+  async getActiveHeadquarters() {
+  return await Headquarter.findAll({
+    where: { 
+      state: 1
+    },
+    attributes: ['id', 'name'] 
+  });
+}
+
   //Aqui obtengo todos los usuarios
   async getAllUsers() {
     return await User.findAll({
@@ -156,7 +177,7 @@ return {
 
   async getUserHeadquarter(idUser: number, idHeadquarter: number, transaction?: Transaction): Promise<UserHeadquarter | null> {
     return await UserHeadquarter.findOne({
-      where: { idUser, IdHeadquarter: idHeadquarter },
+      where: { idUser, idHeadquarter },
       transaction,
     });
   }
@@ -164,10 +185,9 @@ return {
   async assignHeadquarters(data: Array<{ idUser: number; idHeadquarter: number; main: number; createdBy: number }>, transaction?: Transaction) {
     const records = data.map(item => ({
       idUser: item.idUser,
-      IdHeadquarter: item.idHeadquarter,
+      idHeadquarter: item.idHeadquarter,
       main: item.main,
       createdBy: item.createdBy,
-      createdAt: new Date()
     }));
     await UserHeadquarter.bulkCreate(records, { transaction });
   }
@@ -183,10 +203,9 @@ return {
     return await UserHeadquarter.create(
       {
         idUser: data.idUser,
-        IdHeadquarter: data.idHeadquarter,
+        idHeadquarter: data.idHeadquarter,
         main: data.main,
         createdBy: data.createdBy,
-        createdAt: new Date(),
       },
       { transaction }
     );
@@ -200,13 +219,13 @@ return {
   ) {
     return await UserHeadquarter.update(
       { main: data.main },
-      { where: { idUser, IdHeadquarter: idHeadquarter }, transaction }
+      { where: { idUser, idHeadquarter }, transaction }
     );
   }
 
   async deleteUserHeadquarter(idUser: number, idHeadquarter: number, transaction?: Transaction) {
     return await UserHeadquarter.destroy({
-      where: { idUser, IdHeadquarter: idHeadquarter, main: 0 },
+      where: { idUser, idHeadquarter, main: 0 },
       transaction,
     });
   }

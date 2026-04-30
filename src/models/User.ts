@@ -38,7 +38,7 @@ export class User extends Model {
 
     @AllowNull(false)
     @Comment("0=Inactivo 1=Activo")
-    @Column({ type: DataType.TINYINT.UNSIGNED, defaultValue: 1 })
+    @Column({ type: DataType.TINYINT, defaultValue: 1 })
     state!: number
 
     @AllowNull(false)
@@ -52,12 +52,12 @@ export class User extends Model {
 
     @AllowNull(false)
     @Comment("0 =No 1 =Si")
-    @Column({ type: DataType.TINYINT.UNSIGNED, defaultValue: 1 })
+    @Column({ type: DataType.TINYINT.UNSIGNED, defaultValue: 0 })
     specialAgent!: number
 
     @AllowNull(false)
     @Comment("0 =No 1 =Si")
-    @Column({ type: DataType.TINYINT.UNSIGNED, defaultValue: 1 })
+    @Column({ type: DataType.TINYINT.UNSIGNED, defaultValue: 0 })
     paymentAgent!: number
 
     @AllowNull(true)
@@ -78,7 +78,7 @@ export class User extends Model {
     updatedAt!: Date;
 
 
-    @BelongsToMany(() => Headquarter, () => UserHeadquarter)
+    @BelongsToMany(() => Headquarter, () => UserHeadquarter, 'idUser', 'idHeadquarter')
     headquarters!: Headquarter[];
 
 }

@@ -14,11 +14,8 @@ const userController = new UserController(userService)
 
 router.get("/user", isAuth, userController.getUser);
 router.get("/users", isAuth, validateQuerySchema(UserValidator.getUserQuerySchema), UserController.getAllUsers);
-router.get("/users/:idUser/headquartes", isAuth, UserController.getSubHeadquartersByUser);
 router.post("/user/store", isAuth, validateSchema(UserValidator.UserSchema), UserController.createUser);
 router.put('/user/:idUser/update', isAuth, validateSchema(UserValidator.UserUpdateSchema), UserController.updateUser);
-router.put('/user/:idUser/main-headquarter', isAuth, validateSchema(UserValidator.UserHeadUpdateSchema), UserController.updateUsersHeadquarter);
-router.put('/user/:idUser/headquarters', isAuth, validateSchema(UserValidator.UserSubHeadUpdateSchema), UserController.updateUsersSubHeadquarter);
 router.delete('/user/:idUser/delete', isAuth, validateSchema(UserValidator.UserIdSchema), UserController.deleteUser);
 router.put('/user/:idUser/switch-status', isAuth, validateSchema(UserValidator.UserIdSchema), UserController.switchStatus);
 router.put('/user/:idUser/state', isAuth, validateSchema(UserValidator.UserIdSchema), UserController.updateStateUser);

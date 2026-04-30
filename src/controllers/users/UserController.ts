@@ -63,6 +63,23 @@ export class UserController {
       return ApiResponse.error(res, error);
     }
   }
+
+  // Mostra sedes en estado activo
+async getHeadquarters(req: Request, res: Response) {
+  try {
+    const idUser = Number(req.params.IdUser); 
+
+    if (isNaN(idUser)) {
+      throw new Error('El ID de usuario proporcionado no es válido');
+    }
+    const data = await this.userService.getSubHeadquartersByUser(idUser);
+
+    return ApiResponse.success(res, 'consultado correctamente', data);
+    
+  } catch (error) {
+    return ApiResponse.error(res, error);
+  }
+}
   //- Actulizar SEDE principal
   static async updateUsersHeadquarter(req: Request, res: Response): Promise<string | any> {
     try {

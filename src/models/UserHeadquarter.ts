@@ -1,10 +1,10 @@
-import { Table, Column, Model, DataType, ForeignKey, AutoIncrement, PrimaryKey, AllowNull } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, ForeignKey, AutoIncrement, PrimaryKey, AllowNull, BelongsTo } from 'sequelize-typescript';
 import { User } from './User';
 import { Headquarter } from './Headquarter';
 
 
 @Table({
-  tableName: 'usersheadquarters',
+  tableName: 'usersHeadquarters',
   timestamps: false
 })
 
@@ -16,7 +16,7 @@ export class UserHeadquarter extends Model {
     declare id: number 
 
     @AllowNull(false)  
-    @Column({type: DataType.TINYINT.UNSIGNED, defaultValue: 1})
+    @Column({type: DataType.TINYINT, defaultValue: 0})
     main!: number
 
     @ForeignKey(() => User)
@@ -26,15 +26,21 @@ export class UserHeadquarter extends Model {
 
     @ForeignKey(() => Headquarter)
     @AllowNull(false)
-    @Column({type: DataType.INTEGER.UNSIGNED})
-    IdHeadquarter!: number;
+    @Column({type: DataType.TINYINT.UNSIGNED})
+    idHeadquarter!: number;
 
     @AllowNull(true)
     @Column(DataType.MEDIUMINT.UNSIGNED)
     createdBy?: number
 
     @AllowNull(false)
-    @Column(DataType.DATE)
+    @Column({type: DataType.DATE, defaultValue: DataType.NOW})
     createdAt!: Date
+
+    @BelongsTo(() => User, 'idUser')
+    user!: User;
+
+    @BelongsTo(() => Headquarter, 'idHeadquarter')
+    headquarter!: Headquarter;
 }
 

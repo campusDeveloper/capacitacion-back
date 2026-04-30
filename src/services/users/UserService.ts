@@ -33,6 +33,16 @@ export class UserService {
     });
   }
 
+  //
+    async getSelectHeadquarters() {
+    const headquarters = await this.repo.getActiveHeadquarters();
+
+    return headquarters.map(hq => ({
+      idHeadquarter: hq.id,
+      name: hq.name
+    }));
+  }
+
   async updateState(idUser: number, state: number) {
     return await this.repo.updateStateUser(idUser, state);
   }
