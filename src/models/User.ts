@@ -12,11 +12,15 @@ import {
     HasMany, Comment, BelongsToMany
 } from 'sequelize-typescript'
 
+import { Headquarter } from './Headquarter';
+import { UserHeadquarter } from './UserHeadquarter';
+
 
 @Table({
     tableName: 'users',
     timestamps: true
 })
+
 export class User extends Model {
     @PrimaryKey
     @AutoIncrement
@@ -34,7 +38,7 @@ export class User extends Model {
 
     @AllowNull(false)
     @Comment("0=Inactivo 1=Activo")
-    @Column({ type: DataType.TINYINT.UNSIGNED, defaultValue: 1 })
+    @Column({ type: DataType.TINYINT, defaultValue: 1 })
     state!: number
 
     @AllowNull(false)
@@ -47,13 +51,13 @@ export class User extends Model {
     @Index
 
     @AllowNull(false)
-    @Comment("	0=No 1=Si")
-    @Column({ type: DataType.TINYINT.UNSIGNED, defaultValue: 1 })
+    @Comment("0 =No 1 =Si")
+    @Column({ type: DataType.TINYINT.UNSIGNED, defaultValue: 0 })
     specialAgent!: number
 
     @AllowNull(false)
-    @Comment("	0=No 1=Si")
-    @Column({ type: DataType.TINYINT.UNSIGNED, defaultValue: 1 })
+    @Comment("0 =No 1 =Si")
+    @Column({ type: DataType.TINYINT.UNSIGNED, defaultValue: 0 })
     paymentAgent!: number
 
     @AllowNull(true)
@@ -66,11 +70,15 @@ export class User extends Model {
     updatedBy?: number
 
     @AllowNull(false)
-    @Column(DataType.DATE)
-    createdAt!: Date
+    @Column({type: DataType.DATE, defaultValue: DataType.NOW})
+    createdAt!: Date;
 
-    @AllowNull(true)
-    @Column(DataType.DATE)
-    updatedAt!: Date
+    @AllowNull(false)
+    @Column({type: DataType.DATE, defaultValue: DataType.NOW})
+    updatedAt!: Date;
+
+
+    @BelongsToMany(() => Headquarter, () => UserHeadquarter, 'idUser', 'idHeadquarter')
+    headquarters!: Headquarter[];
 
 }
