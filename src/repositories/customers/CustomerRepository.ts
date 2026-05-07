@@ -1,0 +1,99 @@
+import { sequelize } from "../../config/database";
+import { QueryTypes } from "sequelize";
+
+interface CustomerListItemRaw {
+    idCustomer: number;
+    name: string;
+    phone: string;
+    identification: number;
+    affiliateCategory: number;
+    idCustomerType: number | null;
+    countComments: number;
+    reservationId: number | null;
+    number: number | null;
+    checkInDate: string | null;
+    checkOutDate: string | null;
+    roomType: string | null;
+    valueTotal: number | null;
+    valuePaid: number | null;
+    headquarter: string | null;
+    countGuests: number | null;
+}
+
+export class CustomerRepository {
+    async getCustomersList(filters: {
+        name?: string;
+        date?: string;
+        headquarter?: number;
+    }) {
+        // TODO: Consider optimizing the reservation subquery using ROW_NUMBER() window function
+        // for better performance with large datasets
+        const query = `
+            SELECT 
+                c.id AS idCustomer,
+                c.name,
+                c.phone,
+                c.identification,
+                c.affiliateCategory,
+                c.idCustomerType,
+
+                (
+                    SELECT COUNT(*)
+                    FROM customerComments cc
+                    WHERE cc.idCustomer = c.id
+                ) AS countComments,
+
+                r.id AS reservationId,
+                r.number,
+                r.checkInDate,
+                r.checkOutDate,
+                r.roomType,
+                r.valueTotal,
+                r.valuePaid,
+                r.idHeadquarter,
+
+                h.name AS headquarter,
+
+                (
+                    SELECT COUNT(*)
+                    FROM reservationGuests rg
+                    WHERE rg.idReservation = r.id
+                ) AS countGuests
+
+            FROM customers c
+
+            LEFT JOIN reservations r ON r.id = (
+                SELECT r2.id
+                FROM reservations r2
+                WHERE r2.idCustomer = c.id
+                    AND r2.type = 1
+                    AND r2.state = 1
+                ORDER BY r2.checkInDate DESC
+                LIMIT 1
+            )
+
+            LEFT JOIN headquarters h ON h.id = r.idHeadquarter
+
+            WHERE
+                (:name IS NULL OR c.name LIKE CONCAT('%', :name, '%'))
+                AND (
+                    :date IS NULL 
+                    OR (r.checkInDate IS NOT NULL AND r.checkInDate = :date)
+                )
+                AND (:headquarter IS NULL OR r.idHeadquarter = :headquarter)
+
+            ORDER BY r.checkInDate IS NULL, r.checkInDate DESC;
+        `;
+
+        const rows = await sequelize.query<CustomerListItemRaw>(query, {
+            type: QueryTypes.SELECT,
+            replacements: {
+                name: filters.name || null,
+                date: filters.date || null,
+                headquarter: filters.headquarter || null,
+            },
+        });
+
+        return rows;
+    }
+}

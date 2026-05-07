@@ -1,0 +1,70 @@
+import { CustomerRepository } from "../../repositories/customers/CustomerRepository";
+
+interface CustomerListItemRaw {
+    idCustomer: number;
+    name: string;
+    phone: string;
+    identification: number;
+    affiliateCategory: number;
+    idCustomerType: number | null;
+    countComments: number;
+    reservationId: number | null;
+    number: number | null;
+    checkInDate: string | null;
+    checkOutDate: string | null;
+    roomType: string | null;
+    valueTotal: number | null;
+    valuePaid: number | null;
+    headquarter: string | null;
+    countGuests: number | null;
+}
+
+export class CustomerService {
+    private repo: CustomerRepository;
+
+    constructor() {
+        this.repo = new CustomerRepository();
+    }
+
+    private mapAffiliateCategory(category: number): string {
+        switch (category) {
+            case 1: return "A";
+            case 2: return "B";
+            case 3: return "C";
+            case 4: return "Particular";
+            default: return "Desconocido";
+        }
+    }
+
+    async getCustomersList(filters: {
+        name?: string;
+        date?: string;
+        headquarter?: number;
+    }) {
+        const rows = await this.repo.getCustomersList(filters) ?? [];
+
+        return rows.map((row: CustomerListItemRaw) => {
+            const reservation = row.reservationId ? {
+                number: row.number,
+                checkInDate: row.checkInDate,
+                checkOutDate: row.checkOutDate,
+                headquarter: row.headquarter,
+                roomType: row.roomType,
+                countGuests: row.countGuests ?? 0,
+                valueTotal: row.valueTotal,
+                valuePaid: row.valuePaid,
+            } : null;
+
+            return {
+                idCustomer: row.idCustomer,
+                name: row.name,
+                phone: row.phone,
+                identification: row.identification,
+                affiliateCategory: this.mapAffiliateCategory(row.affiliateCategory),
+                idCustomerType: row.idCustomerType,
+                countComments: row.countComments ?? 0,
+                reservation,
+            };
+        });
+    }
+}
