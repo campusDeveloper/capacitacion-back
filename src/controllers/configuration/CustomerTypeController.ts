@@ -63,4 +63,13 @@ export class CustomerTypeController {
             return ApiResponse.error(res, error, statusCode);
         }
     }
+
+    static async getActiveCustomerTypes(req: Request, res: Response) {
+        try {
+            const data = await service.getActiveCustomerTypes();
+            return ApiResponse.success(res, "consultado correctamente", data);
+        } catch (error) {
+            return ApiResponse.error(res, error);
+        }
+    }
 }

@@ -78,4 +78,18 @@ export class CustomerTypeRepository {
 
         return affectedRows;
     }
+
+    async getActiveCustomerTypes() {
+        return await CustomerType.findAll({
+            attributes: [
+                ['id', 'idType'],
+                'name',
+                'color'
+            ],
+            where: {
+                state: 1
+            },
+            order: [['name', 'ASC']]
+        });
+    }
 }

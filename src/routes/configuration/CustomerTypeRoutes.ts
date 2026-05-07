@@ -9,6 +9,7 @@ import { CustomerTypeService } from '../../services/configuration/CustomerTypeSe
 const router = Router()
 
 router.get('/configuration/customer-types', isAuth, CustomerTypeController.getAll);
+router.get('/select/customers-types', isAuth, CustomerTypeController.getActiveCustomerTypes);
 router.post('/configuration/customer-type', isAuth, validateSchema(CustomerTypeValidator.createCustomerTypeSchema),CustomerTypeController.create);
 router.put('/configuration/customer-type/:idType/update',isAuth,validateSchema(CustomerTypeValidator.updateCustomerTypeSchema),CustomerTypeController.update);
 router.delete('/configuration/customer-type/:idType/delete',isAuth,validateSchema(CustomerTypeValidator.customerTypeIdSchema),CustomerTypeController.delete);

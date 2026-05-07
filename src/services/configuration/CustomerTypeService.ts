@@ -78,4 +78,8 @@ export class CustomerTypeService {
             return true;
         });
     }
+
+    async getActiveCustomerTypes() {
+        return await this.repo.getActiveCustomerTypes();
+    }
 }
