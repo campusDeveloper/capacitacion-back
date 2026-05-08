@@ -48,4 +48,16 @@ export class CustomerController {
             return ApiResponse.error(res, error);
         }
     }
+
+    static async getCustomerMessagesHistory(req: Request, res: Response) {
+        try {
+            const { idCustomer } = req.params;
+
+            const data = await service.getCustomerMessagesHistory(Number(idCustomer));
+
+            return ApiResponse.success(res, "consultado correctamente", data);
+        } catch (error) {
+            return ApiResponse.error(res, error);
+        }
+    }
 }

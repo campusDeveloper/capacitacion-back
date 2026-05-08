@@ -27,4 +27,11 @@ router.get(
     CustomerController.getCustomerReservations
 );
 
+router.get(
+    '/customer/:idCustomer/messages-history',
+    isAuth,
+    validateSchema(CustomerValidator.getCustomerReservationsParamsSchema),
+    CustomerController.getCustomerMessagesHistory
+);
+
 export default router;

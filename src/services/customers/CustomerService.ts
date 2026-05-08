@@ -91,4 +91,14 @@ export class CustomerService {
 
         return await this.repo.getCustomerReservations(idCustomer);
     }
+
+    async getCustomerMessagesHistory(idCustomer: number) {
+        const customer = await this.repo.getCustomerById(idCustomer);
+        if (!customer) {
+            throw new Error("Cliente no encontrado");
+        }
+
+        const messages = await this.repo.getCustomerMessagesHistory(idCustomer);
+        return messages ?? [];
+    }
 }

@@ -149,4 +149,36 @@ export class CustomerRepository {
 
         return rows;
     }
+
+    async getCustomerMessagesHistory(idCustomer: number) {
+        const query = `
+            SELECT
+              cm.id,
+              cm.type,
+              cm.content
+
+            FROM chatMessages cm
+
+            INNER JOIN chats c ON c.id = cm.idChat
+
+            INNER JOIN opportunities o ON o.id = c.idOpportunity
+
+            WHERE o.id = (
+              SELECT o2.id
+              FROM opportunities o2
+              WHERE o2.idCustomer = :idCustomer
+              ORDER BY o2.id DESC
+              LIMIT 1
+            )
+
+            ORDER BY cm.id ASC;
+        `;
+
+        const rows = await sequelize.query(query, {
+            type: QueryTypes.SELECT,
+            replacements: { idCustomer },
+        });
+
+        return rows;
+    }
 }
