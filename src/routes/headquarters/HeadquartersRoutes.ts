@@ -6,7 +6,7 @@ import { HeadquarterValidator } from "../../validators/headquarters/HeadquarterV
 
 const router = Router()
 
-router.get("/select/headquarters", isAuth, HeadquarterController.getSelectHeadquarters);
+router.get("/select/headquarters", isAuth, HeadquarterController.getActiveHeadquarters);
 router.get(
     "/user/:idUser/headquarters",
     isAuth,

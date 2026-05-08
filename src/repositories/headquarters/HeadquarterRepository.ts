@@ -135,9 +135,14 @@ export class HeadquarterRepository {
 
     async getActiveHeadquarters(): Promise<Headquarter[]> {
         return await Headquarter.findAll({
-            where: { state: 1 },
-            attributes: ["id", "name"],
-            order: [["name", "ASC"]],
+            attributes: [
+                ['id', 'idHeadquarter'],
+                'name'
+            ],
+            where: {
+                state: 1
+            },
+            order: [['name', 'ASC']]
         });
     }
 

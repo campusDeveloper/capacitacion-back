@@ -16,6 +16,15 @@ export class HeadquarterController {
         }
     }
 
+    static async getActiveHeadquarters(req: Request, res: Response) {
+        try {
+            const data = await service.getActiveHeadquarters();
+            return ApiResponse.success(res, "consultado correctamente", data);
+        } catch (error) {
+            return ApiResponse.error(res, error);
+        }
+    }
+
     static async getUserHeadquarters(req: Request, res: Response) {
         try {
             const data = await service.getUserHeadquarters(Number(req.params.idUser));

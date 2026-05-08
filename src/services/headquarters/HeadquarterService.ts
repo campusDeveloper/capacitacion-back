@@ -20,6 +20,10 @@ export class HeadquarterService {
         }));
     }
 
+    async getActiveHeadquarters(): Promise<ISelectHeadquarterResponse[]> {
+        return await this.repository.getActiveHeadquarters() as any;
+    }
+
     async getUserHeadquarters(idUser: number): Promise<IUserHeadquartersResponse> {
         this.validatePositiveInteger(idUser, "idUser");
         await this.validateUserExists(idUser);
