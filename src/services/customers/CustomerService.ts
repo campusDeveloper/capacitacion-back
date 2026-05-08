@@ -1,4 +1,5 @@
 import { CustomerRepository } from "../../repositories/customers/CustomerRepository";
+import { CustomerType } from "../../models/CustomerType";
 
 interface CustomerListItemRaw {
     idCustomer: number;
@@ -66,5 +67,19 @@ export class CustomerService {
                 reservation,
             };
         });
+    }
+
+    async changeCustomerType(idCustomer: number, idType: number): Promise<boolean> {
+        const customer = await this.repo.getCustomerById(idCustomer);
+        if (!customer) {
+            throw new Error("Cliente no encontrado");
+        }
+
+        const type = await CustomerType.findByPk(idType);
+        if (!type) {
+            throw new Error("Tipo de cliente no válido");
+        }
+
+        return await this.repo.updateCustomerType(idCustomer, idType);
     }
 }

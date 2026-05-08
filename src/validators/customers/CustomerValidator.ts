@@ -6,4 +6,8 @@ export class CustomerValidator {
         date: z.string().optional(),
         headquarter: z.coerce.number().optional(),
     });
+
+    static changeCustomerTypeSchema = z.object({
+        idType: z.number()
+    });
 }

@@ -1,5 +1,7 @@
 import { sequelize } from "../../config/database";
 import { QueryTypes } from "sequelize";
+import { Customer } from "../../models/Customer";
+import { CustomerType } from "../../models/CustomerType";
 
 interface CustomerListItemRaw {
     idCustomer: number;
@@ -95,5 +97,20 @@ export class CustomerRepository {
         });
 
         return rows;
+    }
+
+    async getCustomerById(idCustomer: number): Promise<Customer | null> {
+        return await Customer.findByPk(idCustomer);
+    }
+
+    async updateCustomerType(idCustomer: number, idType: number): Promise<boolean> {
+        const [affectedRows] = await Customer.update(
+            { idCustomerType: idType },
+            {
+                where: { id: idCustomer }
+            }
+        );
+
+        return affectedRows > 0;
     }
 }

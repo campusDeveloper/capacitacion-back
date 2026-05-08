@@ -20,4 +20,20 @@ export class CustomerController {
             return ApiResponse.error(res, error);
         }
     }
+
+    static async changeCustomerType(req: Request, res: Response) {
+        try {
+            const { idCustomer } = req.params;
+            const { idType } = req.body;
+
+            const result = await service.changeCustomerType(
+                Number(idCustomer),
+                Number(idType)
+            );
+
+            return ApiResponse.success(res, "actualizado correctamente", result);
+        } catch (error) {
+            return ApiResponse.error(res, error);
+        }
+    }
 }
