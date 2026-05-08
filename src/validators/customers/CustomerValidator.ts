@@ -10,4 +10,8 @@ export class CustomerValidator {
     static changeCustomerTypeSchema = z.object({
         idType: z.number()
     });
+
+    static getCustomerReservationsParamsSchema = z.object({
+        idCustomer: z.string()
+    });
 }

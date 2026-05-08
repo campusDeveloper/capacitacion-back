@@ -82,4 +82,13 @@ export class CustomerService {
 
         return await this.repo.updateCustomerType(idCustomer, idType);
     }
+
+    async getCustomerReservations(idCustomer: number) {
+        const customer = await this.repo.getCustomerById(idCustomer);
+        if (!customer) {
+            throw new Error("Cliente no encontrado");
+        }
+
+        return await this.repo.getCustomerReservations(idCustomer);
+    }
 }

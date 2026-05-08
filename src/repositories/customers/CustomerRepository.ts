@@ -28,8 +28,7 @@ export class CustomerRepository {
         date?: string;
         headquarter?: number;
     }) {
-        // TODO: Consider optimizing the reservation subquery using ROW_NUMBER() window function
-        // for better performance with large datasets
+
         const query = `
             SELECT 
                 c.id AS idCustomer,
@@ -112,5 +111,42 @@ export class CustomerRepository {
         );
 
         return affectedRows > 0;
+    }
+
+    async getCustomerReservations(idCustomer: number) {
+        const query = `
+            SELECT
+              r.id,
+              r.number,
+              r.checkInDate,
+              r.checkOutDate,
+              r.roomType,
+              r.valueTotal AS value,
+              h.name AS headquarter,
+
+              (
+                SELECT COUNT(*)
+                FROM reservationGuests rg
+                WHERE rg.idReservation = r.id
+              ) AS countGuests
+
+            FROM reservations r
+
+            LEFT JOIN headquarters h ON h.id = r.idHeadquarter
+
+            WHERE
+              r.idCustomer = :idCustomer
+              AND r.type = 1
+              AND r.state = 1
+
+            ORDER BY r.checkInDate DESC;
+        `;
+
+        const rows = await sequelize.query(query, {
+            type: QueryTypes.SELECT,
+            replacements: { idCustomer },
+        });
+
+        return rows;
     }
 }

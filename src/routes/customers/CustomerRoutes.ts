@@ -20,4 +20,11 @@ router.put(
     CustomerController.changeCustomerType
 );
 
+router.get(
+    '/customer/:idCustomer/reservations',
+    isAuth,
+    validateSchema(CustomerValidator.getCustomerReservationsParamsSchema),
+    CustomerController.getCustomerReservations
+);
+
 export default router;
