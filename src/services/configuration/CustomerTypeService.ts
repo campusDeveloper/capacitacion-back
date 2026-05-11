@@ -69,6 +69,14 @@ export class CustomerTypeService {
 
     async updateCustomerTypeState(id: number, state: UpdateCustomerTypeStatePayload["state"]) {
         return await sequelize.transaction(async (transaction) => {
+            if (state === 0) {
+                const count = await this.repo.countCustomersByType(id, transaction);
+
+                if (count > 0) {
+                    throw new Error("Este tipo de cliente esta en uso");
+                }
+            }
+
             const affectedRows = await this.repo.updateCustomerTypeState(id, state, transaction);
 
             if (affectedRows === 0) {
