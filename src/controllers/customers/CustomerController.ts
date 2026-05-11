@@ -7,11 +7,12 @@ const service = new CustomerService();
 export class CustomerController {
     static async getCustomersList(req: Request, res: Response) {
         try {
-            const { name, date, headquarter } = req.query;
-            
+            const { name, dateFrom, dateTo, headquarter } = req.query;
+
             const data = await service.getCustomersList({
                 name: name as string | undefined,
-                date: date as string | undefined,
+                dateFrom: dateFrom as string | undefined,
+                dateTo: dateTo as string | undefined,
                 headquarter: typeof headquarter === 'string' ? parseInt(headquarter, 10) : headquarter as number | undefined,
             });
             

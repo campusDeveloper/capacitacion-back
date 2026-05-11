@@ -26,7 +26,8 @@ interface CustomerListItemRaw {
 export class CustomerRepository {
     async getCustomersList(filters: {
         name?: string;
-        date?: string;
+        dateFrom?: string;
+        dateTo?: string;
         headquarter?: number;
     }) {
 
@@ -79,8 +80,12 @@ export class CustomerRepository {
             WHERE
                 (:name IS NULL OR c.name LIKE CONCAT('%', :name, '%'))
                 AND (
-                    :date IS NULL 
-                    OR (r.checkInDate IS NOT NULL AND r.checkInDate = :date)
+                    (:dateFrom IS NULL AND :dateTo IS NULL)
+                    OR (
+                        r.checkInDate IS NOT NULL
+                        AND (:dateFrom IS NULL OR r.checkInDate >= :dateFrom)
+                        AND (:dateTo IS NULL OR r.checkInDate <= :dateTo)
+                    )
                 )
                 AND (:headquarter IS NULL OR r.idHeadquarter = :headquarter)
 
@@ -91,7 +96,8 @@ export class CustomerRepository {
             type: QueryTypes.SELECT,
             replacements: {
                 name: filters.name || null,
-                date: filters.date || null,
+                dateFrom: filters.dateFrom || null,
+                dateTo: filters.dateTo || null,
                 headquarter: filters.headquarter || null,
             },
         });

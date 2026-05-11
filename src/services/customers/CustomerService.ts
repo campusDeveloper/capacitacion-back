@@ -39,7 +39,8 @@ export class CustomerService {
 
     async getCustomersList(filters: {
         name?: string;
-        date?: string;
+        dateFrom?: string;
+        dateTo?: string;
         headquarter?: number;
     }) {
         const rows = await this.repo.getCustomersList(filters) ?? [];
