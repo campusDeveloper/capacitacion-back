@@ -101,4 +101,32 @@ export class CustomerService {
         const messages = await this.repo.getCustomerMessagesHistory(idCustomer);
         return messages ?? [];
     }
+
+    async getCustomerComments(idCustomer: number) {
+        const customer = await this.repo.getCustomerById(idCustomer);
+        if (!customer) {
+            throw new Error("Cliente no encontrado");
+        }
+
+        return await this.repo.getCustomerComments(idCustomer);
+    }
+
+    async createCustomerComment(idCustomer: number, comment: string, userId: number) {
+        if (!comment?.trim() || comment.length > 250) {
+            throw new Error("Comentario inválido");
+        }
+
+        const customer = await this.repo.getCustomerById(idCustomer);
+        if (!customer) {
+            throw new Error("Cliente no encontrado");
+        }
+
+        await this.repo.createCustomerComment({
+            idCustomer,
+            comment,
+            createdBy: userId,
+        });
+
+        return true;
+    }
 }

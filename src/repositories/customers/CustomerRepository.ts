@@ -2,6 +2,7 @@ import { sequelize } from "../../config/database";
 import { QueryTypes } from "sequelize";
 import { Customer } from "../../models/Customer";
 import { CustomerType } from "../../models/CustomerType";
+import { CustomerOpportunityComment } from "../../models/CustomerOpportunityComment";
 
 interface CustomerListItemRaw {
     idCustomer: number;
@@ -180,5 +181,49 @@ export class CustomerRepository {
         });
 
         return rows;
+    }
+
+    async getCustomerComments(idCustomer: number) {
+        const query = `
+            SELECT
+              c.id AS idComment,
+              c.comment,
+              c.createdAt,
+              u.name AS user
+            FROM customerOpportunityComments c
+            INNER JOIN users u ON u.id = c.createdBy
+            WHERE c.idCustomer = :idCustomer
+
+            UNION
+
+            SELECT
+              c.id AS idComment,
+              c.comment,
+              c.createdAt,
+              u.name AS user
+            FROM customerOpportunityComments c
+            INNER JOIN users u ON u.id = c.createdBy
+            INNER JOIN opportunities o ON o.id = c.idOpportunity
+            INNER JOIN customers cu ON cu.identification = o.identification
+            WHERE cu.id = :idCustomer
+
+            ORDER BY createdAt DESC;
+        `;
+
+        const rows = await sequelize.query(query, {
+            type: QueryTypes.SELECT,
+            replacements: { idCustomer },
+        });
+
+        return rows;
+    }
+
+    async createCustomerComment(data: {
+        idCustomer?: number;
+        idOpportunity?: number;
+        comment: string;
+        createdBy: number;
+    }) {
+        return await CustomerOpportunityComment.create(data);
     }
 }

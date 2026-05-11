@@ -34,4 +34,18 @@ router.get(
     CustomerController.getCustomerMessagesHistory
 );
 
+router.get(
+    '/customer/:idCustomer/comments',
+    isAuth,
+    validateSchema(CustomerValidator.getCustomerReservationsParamsSchema),
+    CustomerController.getCustomerComments
+);
+
+router.post(
+    '/customer/:idCustomer/comment',
+    isAuth,
+    validateSchema(CustomerValidator.createCustomerCommentSchema),
+    CustomerController.createCustomerComment
+);
+
 export default router;

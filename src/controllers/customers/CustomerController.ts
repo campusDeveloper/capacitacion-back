@@ -60,4 +60,34 @@ export class CustomerController {
             return ApiResponse.error(res, error);
         }
     }
+
+    static async getCustomerComments(req: Request, res: Response) {
+        try {
+            const { idCustomer } = req.params;
+
+            const data = await service.getCustomerComments(Number(idCustomer));
+
+            return ApiResponse.success(res, "consultado correctamente", data);
+        } catch (error) {
+            return ApiResponse.error(res, error);
+        }
+    }
+
+    static async createCustomerComment(req: Request, res: Response) {
+        try {
+            const { idCustomer } = req.params;
+            const { comment } = req.body;
+            const userId = (req as any).user.id;
+
+            const result = await service.createCustomerComment(
+                Number(idCustomer),
+                comment,
+                userId
+            );
+
+            return ApiResponse.success(res, "Almacenado correctamente", result);
+        } catch (error) {
+            return ApiResponse.error(res, error);
+        }
+    }
 }
