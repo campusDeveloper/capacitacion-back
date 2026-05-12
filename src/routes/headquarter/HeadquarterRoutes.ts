@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { HeadquarterController } from '../../controllers/config/HeadquarterController';
+import { HeadquarterController } from '../../controllers/configuration/HeadquarterController';
 import { validateSchema as ValidateSchema } from '../../middlewares/ValidateSchema'; 
 import { AuthMiddleware } from '../../middlewares/AuthMiddleware';
 import { 

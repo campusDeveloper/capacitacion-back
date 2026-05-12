@@ -1,4 +1,5 @@
-import { Transaction, fn, col, literal } from 'sequelize';
+import { Transaction, fn, col, literal, QueryTypes } from 'sequelize';
+import { sequelize } from '../../config/database';
 import { Headquarter } from '../../models/Headquarter';
 import { HeadquarterKnowledge } from '../../models/HeadquarterKnowledge';
 import { Doc } from '../../models/Doc';
@@ -55,10 +56,24 @@ export class HeadquarterRepository {
     });
   }
 
+  async countReservationsByHeadquarter(id: number, transaction?: Transaction): Promise<number> {
+    const query = `
+      SELECT COUNT(*) as count
+      FROM reservations
+      WHERE idHeadquarter = :id
+    `;
+    const result = await sequelize.query(query, {
+      type: QueryTypes.SELECT,
+      replacements: { id },
+      transaction,
+    });
+    return (result[0] as any).count;
+  }
+
   async switchState(headquarter: Headquarter, updatedBy: number, transaction?: Transaction): Promise<Headquarter> {
     return await headquarter.update(
       {
-        state: headquarter.state === 1 ? 0 : 1, 
+        state: headquarter.state === 1 ? 0 : 1,
         updatedBy,
       },
       { transaction }

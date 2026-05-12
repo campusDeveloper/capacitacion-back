@@ -54,6 +54,15 @@ export class HeadquarterService {
         throw error;
       }
 
+      if (headquarter.state === 1) { // If currently active, check if can deactivate
+        const count = await this.repo.countReservationsByHeadquarter(id, transaction);
+        if (count > 0) {
+          const error = new Error('Esta sede esta siendo utilizada');
+          (error as any).status = 400;
+          throw error;
+        }
+      }
+
       return await this.repo.switchState(headquarter, updatedBy, transaction);
     });
   }
