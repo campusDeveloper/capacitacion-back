@@ -158,7 +158,7 @@ export class CustomerRepository {
     }
 
     async getCustomerMessagesHistory(idCustomer: number) {
-        const query = `
+        const messagesQuery = `
             SELECT
               cm.id,
               cm.type,
@@ -181,12 +181,34 @@ export class CustomerRepository {
             ORDER BY cm.id ASC;
         `;
 
-        const rows = await sequelize.query(query, {
+        const lastConnectionQuery = `
+            SELECT
+              c.lastConnection
+            FROM chats c
+            INNER JOIN opportunities o ON o.id = c.idOpportunity
+            WHERE o.id = (
+              SELECT o2.id
+              FROM opportunities o2
+              WHERE o2.idCustomer = :idCustomer
+              ORDER BY o2.id DESC
+              LIMIT 1
+            )
+            LIMIT 1;
+        `;
+
+        const messages = await sequelize.query(messagesQuery, {
             type: QueryTypes.SELECT,
             replacements: { idCustomer },
         });
 
-        return rows;
+        const lastRows = await sequelize.query(lastConnectionQuery, {
+            type: QueryTypes.SELECT,
+            replacements: { idCustomer },
+        });
+
+        const lastConnection = (lastRows && lastRows.length > 0 && (lastRows[0] as any).lastConnection) || null;
+
+        return { messages, lastConnection };
     }
 
     async getCustomerComments(idCustomer: number) {

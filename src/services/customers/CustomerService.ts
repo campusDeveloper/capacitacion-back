@@ -20,6 +20,13 @@ interface CustomerListItemRaw {
     countGuests: number | null;
 }
 
+interface MessageRow {
+    id: number;
+    type: number;
+    content: string;
+    lastConnection: string | null;
+}
+
 export class CustomerService {
     private repo: CustomerRepository;
 
@@ -99,8 +106,21 @@ export class CustomerService {
             throw new Error("Cliente no encontrado");
         }
 
-        const messages = await this.repo.getCustomerMessagesHistory(idCustomer);
-        return messages ?? [];
+        const result = await this.repo.getCustomerMessagesHistory(idCustomer) as {
+            messages: MessageRow[];
+            lastConnection: string | null;
+        };
+
+        const messages = result.messages ?? [];
+
+        return {
+            messages: messages.map((m: MessageRow) => ({
+                id: m.id,
+                type: m.type,
+                content: m.content,
+            })),
+            lastConnection: result.lastConnection || null,
+        };
     }
 
     async getCustomerComments(idCustomer: number) {
