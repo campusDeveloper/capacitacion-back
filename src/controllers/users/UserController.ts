@@ -33,6 +33,17 @@ export class UserController {
       return ApiResponse.error(res, error);
     }
   }
+
+  // Select de Usuarios (Agentes Comerciales)
+  static async getSelectUsers(req: Request, res: Response) {
+    try {
+      const data = await service.getSelectUsers();
+      return ApiResponse.success(res, "consultado correctamente", data);
+    } catch (error) {
+      return ApiResponse.error(res, error);
+    }
+  }
+
   //- Listar sedes por usuario todo
   static async getSubHeadquartersByUser(req: Request, res: Response) {
     try {

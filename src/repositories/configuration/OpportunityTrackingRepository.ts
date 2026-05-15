@@ -13,6 +13,18 @@ export class OpportunityTrackingRepository {
         });
     }
 
+    async getActiveParentsForSelect(): Promise<OpportunityTracking[]> {
+        return OpportunityTracking.findAll({
+            where: {
+                state: 1,
+                idOpportunityTracking: { [Op.is]: null }
+            },
+            attributes: ["id", "name", "color"],
+            order: [["name", "ASC"]]
+        });
+    }
+
+
     async countChildren(parentId: number): Promise<number> {
         return OpportunityTracking.count({
             where: { idOpportunityTracking: parentId }

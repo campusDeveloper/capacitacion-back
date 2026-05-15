@@ -170,4 +170,13 @@ export class OpportunityTrackingController {
         }
     }
 
+    async getSelectParentTrackings(req: Request, res: Response, next: NextFunction) {
+        try {
+            const data = await service.getSelectParentTrackings();
+            return ApiResponse.success(res, "consultado correctamente", data);
+        } catch (err) {
+            next(err);
+        }
+    }
+
 }

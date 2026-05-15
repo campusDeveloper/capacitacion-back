@@ -227,4 +227,14 @@ export class OpportunityTrackingServices {
             await this.repository.deleteChild(idTracking, transaction);
         });
     }
+
+    async getSelectParentTrackings() {
+        const trackings = await this.repository.getActiveParentsForSelect();
+
+        return trackings.map((tracking: any) => ({
+            idTracking: tracking.id,
+            name: tracking.name,
+            color: tracking.color
+        }));
+    }
 }

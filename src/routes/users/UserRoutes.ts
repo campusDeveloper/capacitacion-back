@@ -19,7 +19,7 @@ router.put('/user/:idUser/update', isAuth, validateSchema(UserValidator.UserUpda
 router.delete('/user/:idUser/delete', isAuth, validateSchema(UserValidator.UserIdSchema), UserController.deleteUser);
 router.put('/user/:idUser/switch-status', isAuth, validateSchema(UserValidator.UserIdSchema), UserController.switchStatus);
 router.put('/user/:idUser/state', isAuth, validateSchema(UserValidator.UserIdSchema), UserController.updateStateUser);
+router.get("/select/users", isAuth, UserController.getSelectUsers);
 
 export default router
-
 

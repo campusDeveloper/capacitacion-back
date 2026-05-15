@@ -213,4 +213,14 @@ export class HeadquarterService {
       }, transaction);
     });
   }
+  
+  async getSelectHeadquarters() {
+
+    const headquarters = await this.repo.getActiveHeadquarters();
+
+    return headquarters.map((hq: any) => ({
+      idHeadquarter: hq.id,
+      name: hq.name
+    }));
+  }
 }

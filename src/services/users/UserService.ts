@@ -43,6 +43,16 @@ export class UserService {
     }));
   }
 
+  async getSelectUsers() {
+    const users = await this.repo.getActiveCommercialUsers();
+
+    return users.map(user => ({
+      idUser: user.id,
+      name: user.name
+    }));
+  }
+
+
   async updateState(idUser: number, state: number) {
     return await this.repo.updateStateUser(idUser, state);
   }

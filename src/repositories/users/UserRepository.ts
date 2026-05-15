@@ -61,6 +61,18 @@ return {
         });
   }
 
+  async getActiveCommercialUsers() {
+    return await User.findAll({
+      where: {
+        type: 2,
+        state: 1
+      },
+      attributes: ['id', 'name'],
+      order: [['name', 'ASC']]
+    });
+  }
+
+
   // Cambiar estado de usuario
     async updateStateUser (idUser: number, state: number) {
       return await User.update(

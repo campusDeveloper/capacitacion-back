@@ -72,4 +72,9 @@ router.delete(
         controller.deleteSubState(req, res, next)    
 );
 
+router.get(
+    "/select/seguimiento", isAuth, (req, res, next) =>
+        controller.getSelectParentTrackings(req, res, next)
+);
+
 export default router;

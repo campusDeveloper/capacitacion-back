@@ -59,4 +59,13 @@ export class OpportunityStateController {
       return ApiResponse.error(res, error);
     }
   }
+  //- Select de Estados Activos
+  static async getSelectStates(req: Request, res: Response): Promise<string | any> {
+    try {
+      const data = await service.getSelectStates();
+      return ApiResponse.success(res, "consultado correctamente", data);
+    } catch (error) {
+      return ApiResponse.error(res, error);
+    }
+  }
 }

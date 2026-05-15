@@ -1,7 +1,7 @@
 import { OpportunityStateRepository } from "../../repositories/configuration/OpportunityStateRepository";
 import { IOpportunityStateBody, IOpportunityStateUpdateBody } from "../../interfaces/configuration/OpportunityState";
 import { sequelize } from "../../config/database";
-import { OpportunityState, OpportunityState } from "../../models/OpportunityState";
+import { OpportunityState } from "../../models/OpportunityState";
 
 export class OpportunityStateService {
   private repo: OpportunityStateRepository;
@@ -62,4 +62,15 @@ export class OpportunityStateService {
       return updated;
     });
   }
+
+  async getSelectStates() {
+    const states = await this.repo.getActiveStates();
+
+    return states.map((state: any) => ({
+      idState: state.id,
+      name: state.name,
+      color: state.color
+    }));
+  }
+
 }

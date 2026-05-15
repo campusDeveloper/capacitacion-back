@@ -11,5 +11,6 @@ router.post("/configuration/state-oportunity", isAuth, validateSchema(Opportunit
 router.put('/configuration/state-oportunity/:id/update', isAuth, validateSchema(OpportunityStateValidator.OpportunityStateUpdateSchema), OpportunityStateController.updateOpportunityState);
 router.delete('/configuration/state-oportunity/:id/delete', isAuth, validateSchema(OpportunityStateValidator.OpportunityStateIdSchema), OpportunityStateController.deleteOpportunityState);
 router.put('/configuration/state-oportunity/:id/state', isAuth, validateSchema(OpportunityStateValidator.OpportunityStateIdSchema), OpportunityStateController.switchStatus);
+router.get("/select/states", isAuth, OpportunityStateController.getSelectStates);
 
 export default router

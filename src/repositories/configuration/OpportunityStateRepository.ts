@@ -126,4 +126,23 @@ async getAllOpportunityStates(): Promise<OpportunityState[]> {
   async getAllSorted(): Promise<OpportunityState[]> {
     return await this.getAllOpportunityStates();
   }
+
+  async getActiveStates(): Promise<OpportunityState[]> {
+  return await OpportunityState.findAll({
+    where: {
+      [Op.or]: [
+        { state: 1 },
+        sequelize.literal(`
+          id IN (
+            SELECT DISTINCT idOpportunityState
+            FROM opportunities
+            WHERE idOpportunityState IS NOT NULL
+          )
+        `)
+      ]
+    },
+    attributes: ['id', 'name', 'color'],
+    order: [['name', 'ASC']]
+  });
+}
 }
